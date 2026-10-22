@@ -37,6 +37,9 @@ input{font:inherit;color:inherit}
 /* Logos : cercle monochrome */
 .lg{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--ink);color:var(--bg);font:400 15px/1 var(--serif);letter-spacing:.2px}
 .lg svg{width:18px;height:18px;fill:currentColor}
+.lg.im{background:#fff;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(10,10,10,.12)}
+.lg.im img{width:100%;height:100%;display:block}
+.lg.mono{background:var(--ink);color:var(--bg)}
 
 /* Accueil */
 .brand{display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:-.1px;font-size:15px}
@@ -70,7 +73,7 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
 .chip .lg svg{width:14px;height:14px}
 .chip:active{transform:scale(.96)}
 .chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.chip.on .lg{background:var(--bg);color:var(--ink)}
+.chip.on .lg.mono{background:var(--bg);color:var(--ink)}
 .cta{width:100%;height:56px;margin-top:16px;border-radius:16px;background:var(--ink);color:var(--bg);font-size:16px;font-weight:600;letter-spacing:.2px;transition:transform .15s}
 .cta:active{transform:scale(.985)}
 .err{color:#B42318;margin:14px 2px 0;font-size:14px}
@@ -110,7 +113,7 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
 .sign-h{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 10px}
 .sign-h b{font:400 30px/1 var(--serif);letter-spacing:-.3px}
 .sign-h span{font-size:13px;color:rgba(255,255,255,.6)}
-.sign .lg{background:#fff;color:#0A0A0A}
+.sign .lg.mono{background:#fff;color:#0A0A0A}
 .it{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:transparent;border-radius:0;padding:12px 0;margin:0;border-top:1px solid var(--sign-line);transition:opacity .15s}
 .it:active{opacity:.6}
 .it .nm{flex:1;min-width:0;font-weight:500;font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -145,6 +148,18 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
 .go3 a{display:flex;align-items:center;justify-content:center;height:52px;border-radius:15px;font-weight:600;text-decoration:none;background:transparent;color:var(--ink);border:1px solid var(--line)}
 .go3 a.p{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .hide{display:none!important}
+/* Choix de l'itinéraire */
+.map{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:14px;margin-bottom:14px}
+.map svg{display:block;width:100%;height:190px}
+.rt{display:block;width:100%;text-align:left;background:var(--surface);border:1.5px solid var(--line);border-radius:20px;padding:16px 18px;margin-bottom:10px;transition:border-color .15s,background .15s}
+.rt.on{border-color:var(--ink);box-shadow:inset 0 0 0 .5px var(--ink)}
+.rt .r-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.rt .r-dur{font:400 30px/1 var(--serif)}
+.rt .r-tag{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:4px 9px;border-radius:999px;background:var(--ink);color:var(--bg);white-space:nowrap}
+.rt .r-tag.soft{background:transparent;color:var(--muted);border:1px solid var(--line)}
+.rt .r-via{margin-top:8px;font-weight:600;font-size:15px}
+.rt .r-sub{color:var(--muted);font-size:13.5px;margin-top:2px}
+.cta.fix{margin-top:6px}
 </style>
 </head>
 <body>
@@ -207,18 +222,18 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
 <script>
 const ICONS={"mcdonalds":"M17.243 3.006c2.066 0 3.742 8.714 3.742 19.478H24c0-11.588-3.042-20.968-6.766-20.968-2.127 0-4.007 2.81-5.248 7.227-1.241-4.416-3.121-7.227-5.231-7.227C3.031 1.516 0 10.888 0 22.476h3.014c0-10.763 1.658-19.47 3.724-19.47 2.066 0 3.741 8.05 3.741 17.98h2.997c0-9.93 1.684-17.98 3.75-17.98Z","burgerking":"M15.39 12.614c-.72 0-1.11.538-1.11 1.215v1.508c0 .125-.043.182-.12.182-.056 0-.098-.035-.147-.133l-.971-1.885c-.37-.72-.755-.887-1.196-.887-.734 0-1.14.552-1.14 1.243v4.314c0 .678.392 1.215 1.112 1.215.72 0 1.112-.537 1.112-1.215v-1.507c0-.126.042-.182.119-.182.055 0 .097.035.146.133l.972 1.885c.37.719.769.886 1.195.886.735 0 1.14-.551 1.14-1.242v-4.315c0-.677-.391-1.215-1.111-1.215zm-4.02-.405c.364 0 .68-.286.68-.642 0-.238-.099-.412-.224-.572-.203-.266-.385-.496-.476-.74-.02-.056-.007-.105.056-.154.217-.167.469-.537.469-1.124 0-.886-.734-1.389-1.622-1.389h-.79c-.553 0-.819.321-.819.754v3.114c0 .419.245.754.692.754.448 0 .693-.335.693-.754v-.74c0-.09.042-.133.111-.133.084 0 .112.049.126.133.063.356.23.837.42 1.082.237.314.46.411.685.411zm-1.146-2.666h-.098c-.119 0-.175-.07-.175-.161v-.474c0-.09.056-.16.175-.16h.098c.294 0 .385.208.385.39 0 .174-.091.405-.385.405zm-3.761 2.666c1.132 0 1.734-.677 1.734-1.528V8.328c0-.419-.245-.754-.692-.754-.448 0-.693.335-.693.754v2.276c0 .167-.097.363-.35.363-.251 0-.335-.196-.335-.363V8.328c0-.419-.252-.754-.7-.754-.447 0-.691.335-.691.754v2.353c0 .852.594 1.528 1.727 1.528zm12.011-.034c.392 0 .7-.23.7-.65 0-.412-.308-.642-.7-.642h-.63c-.118 0-.174-.07-.174-.16v-.133c0-.091.056-.161.175-.161h.482c.336 0 .602-.202.602-.559 0-.355-.266-.558-.602-.558h-.482c-.12 0-.175-.07-.175-.16V9.04c0-.091.056-.161.175-.161h.629c.392 0 .7-.23.7-.65 0-.411-.308-.642-.7-.642h-1.321c-.553 0-.818.321-.818.754v3.079c0 .432.265.754.818.754h1.321zm2.642 3.127h-.342c-.615 0-1.09.286-1.09.914 0 .573.517.845.901.845.189 0 .322.056.322.202 0 .182-.224.3-.462.3-.79 0-1.328-.537-1.328-1.535 0-1.11.734-1.515 1.3-1.515.692 0 .804.349 1.287.349a.927.927 0 0 0 .936-.915.95.95 0 0 0-.398-.788c-.427-.315-1.07-.545-1.979-.545-1.629 0-3.216 1.026-3.216 3.414 0 2.282 1.587 3.35 3.153 3.35 1.643 0 2.685-1.012 2.685-2.492 0-.935-.587-1.584-1.769-1.584zm-12.43-2.688c-.783 0-1.21.587-1.21 1.32v4.132c0 .734.427 1.32 1.21 1.32.783 0 1.21-.586 1.21-1.32v-4.132c0-.733-.427-1.32-1.21-1.32zm11.494-.405c.447 0 .692-.335.692-.754v-.74c0-.09.042-.132.112-.132.084 0 .111.049.125.133.063.355.231.837.42 1.082.238.314.461.412.685.412.363 0 .678-.286.678-.643 0-.237-.098-.412-.224-.572-.237-.3-.384-.496-.475-.74-.02-.056-.007-.105.056-.153.217-.168.469-.538.469-1.124 0-.887-.735-1.39-1.623-1.39h-.79c-.552 0-.817.321-.817.754v3.114c0 .419.244.753.692.753zm.615-3.301c0-.09.056-.161.175-.161h.098c.293 0 .384.21.384.391 0 .175-.09.405-.384.405h-.098c-.12 0-.175-.07-.175-.16zm-18.87 3.267h.986c.93 0 1.496-.622 1.496-1.397 0-.621-.37-.907-.454-.977-.035-.028-.07-.056-.07-.084 0-.035.021-.048.056-.09.133-.154.266-.398.266-.754 0-.838-.567-1.285-1.448-1.285h-.832c-.552 0-.817.321-.817.754v3.079c0 .433.265.754.817.754zm.413-3.386c0-.09.056-.16.175-.16h.09c.301 0 .392.209.392.39 0 .168-.09.405-.391.405h-.091c-.12 0-.175-.07-.175-.16zm0 1.634c0-.091.056-.161.175-.161h.126c.335 0 .433.223.433.426 0 .181-.098.44-.433.44h-.126c-.12 0-.175-.07-.175-.161zm11.878 1.794c1.098 0 1.79-.699 1.79-1.718 0-.649-.391-1.096-1.174-1.096h-.224c-.413 0-.734.196-.734.636 0 .39.342.58.601.58.133 0 .217.041.217.139 0 .125-.147.21-.315.21-.524 0-.88-.37-.88-1.062 0-.768.489-1.047.866-1.047.462 0 .539.238.86.238.37 0 .623-.308.623-.629a.669.669 0 0 0-.266-.544c-.294-.217-.706-.377-1.321-.377-1.084 0-2.14.712-2.14 2.36 0 1.576 1.056 2.31 2.097 2.31zm-8.718 3.762a.354.354 0 0 1-.07-.188c0-.077.042-.133.126-.21.196-.181.678-.635.944-1.047.202-.314.286-.6.286-.837 0-.607-.552-1.082-1.153-1.082-.385 0-.748.216-.993.614-.329.53-.72 1.145-.972 1.39-.063.062-.098.076-.146.076-.084 0-.12-.056-.12-.146v-.699c0-.684-.405-1.235-1.139-1.235-.74 0-1.14.551-1.14 1.235v4.3c0 .685.399 1.237 1.14 1.237.734 0 1.14-.552 1.14-1.236v-.991c0-.084.035-.147.119-.147.111 0 .14.112.167.168.161.384.63 1.2 1.063 1.682.294.32.657.524 1.042.524.65 0 1.196-.566 1.196-1.173 0-.377-.161-.657-.469-.991-.392-.427-.853-.986-1.021-1.244zm15.751 6.702C19.432 23.707 16.313 24 12 24c-4.313 0-7.432-.293-9.25-1.32-1.09-.614-1.642-1.451-1.642-2.052 0-.342.181-.537.587-.537h20.61c.406 0 .587.195.587.537 0 .6-.552 1.438-1.643 2.053zm1.056-15.917H1.695c-.406 0-.587-.209-.587-.586C1.108 3.944 4.47 0 12 0c7.46 0 10.892 3.944 10.892 6.178 0 .377-.181.586-.587.586Z","kfc":"M21.893 8.23c-4.187.001-5.249 2.365-5.42 3.97-.194 1.802 1.053 3.57 4.127 3.57 1.294 0 2.14-.225 2.44-.32a.215.215 0 00.147-.166l.173-.91a.184.184 0 00-.236-.21c-.336.106-.93.252-1.685.252-1.469 0-2.53-.882-2.395-2.4.13-1.47 1.121-2.59 2.485-2.59.82 0 1.183.43 1.156 1.003v.033a.184.184 0 00.182.193h.557c.086 0 .16-.06.18-.143l.39-1.76a.215.215 0 00-.15-.255 7.21 7.21 0 00-1.95-.266zm-20.157.116a.2.2 0 00-.195.156l-.108.484a.198.198 0 00.13.23l.033.01c.208.082.45.266.348.748l-.792 3.62c-.207.987-.542 1.19-.86 1.226h-.01a.2.2 0 00-.176.157l-.102.464a.192.192 0 00.187.233h3.487c.085 0 .159-.06.177-.142l.12-.543a.184.184 0 00-.112-.21l-.022-.01c-.177-.07-.418-.224-.356-.51l.405-1.85c1.389 2.535 1.848 3.266 3.514 3.265H8.91a.181.181 0 00.177-.142l.105-.47a.195.195 0 00-.186-.238c-.376-.006-.56-.093-.935-.575l-1.932-2.614 2.51-2.088c.337-.264.748-.338.976-.368l.022-.002a.185.185 0 00.163-.144l.103-.464a.184.184 0 00-.18-.223h-3.02a.199.199 0 00-.193.155l-.102.46a.2.2 0 00.138.235c.178.069.217.24.063.366L4.046 11.7l.44-2.014a.683.683 0 01.477-.487l.025-.008a.199.199 0 00.135-.147l.106-.477a.181.181 0 00-.177-.22zm8.88 0a.2.2 0 00-.194.156l-.107.483a.19.19 0 00.122.221l.02.008c.204.077.487.274.364.758l-1.21 5.48a.182.182 0 00.178.222h2.777c.086 0 .16-.06.179-.143l.12-.547a.174.174 0 00-.098-.196 1.558 1.558 0 01-.027-.013c-.176-.086-.438-.285-.35-.67.009-.05.27-1.24.27-1.24h2.362c.086 0 .16-.06.18-.143l.221-1a.183.183 0 00-.18-.224h-2.28l.427-1.94 1.592-.003c.515 0 .672.27.642.728l-.002.024a.184.184 0 00.183.205h.587c.086 0 .16-.06.178-.144l.4-1.8a.184.184 0 00-.18-.222z","starbucks":"M13.2072 5.2801c-.1052-.0188-.6126-.104-1.2072-.104s-1.102.0848-1.2072.104c-.0605.0108-.0837-.0484-.0377-.0828.0417-.0308 1.2445-.9463 1.2445-.9463l1.244.9463c.0469.0344.024.0936-.0364.0828zm-2.0783 5.9446s-.0636.0228-.0804.0788c.252.1937.4257.6343.9515.6343s.6995-.4406.9511-.6343c-.0164-.0564-.08-.0788-.08-.0788s-.3293.0776-.8711.0776c-.5418 0-.8711-.0776-.8711-.0776zM12 10.4832c-.146 0-.178-.0552-.2777-.0548-.0948.0004-.2789.076-.319.1453a.1542.1542 0 00.0413.0948c.2129.032.309.1505.5558.1505.2469 0 .3425-.1185.5558-.1505a.1579.1579 0 00.0412-.0948c-.0396-.0692-.224-.1445-.3193-.1453-.1-.0008-.1324.0548-.2781.0548zm11.9868 2.27a11.964 11.964 0 01-.076.8528c-1.359.2249-1.8447-.986-3.2368-.9252.0832.2954.1508.5963.2029.9036 1.148-.0008 1.6105 1.0724 2.8878.9143-.0672.3281-.148.6519-.2413.9708-1.01.0992-1.3657-.9044-2.5345-.8767.0096.1664.0148.3345.0148.5041l-.0048.2805 2.2696.866a12.04 12.04 0 01-.3965.9479c-.6823-.0376-.9175-.9127-1.9555-.8431a9.0882 9.0882 0 01-.118.665c.9015-.0632 1.0955.7667 1.7414.834a12.2317 12.2317 0 01-.5302.8767c-.3826-.205-.7143-.8231-1.4398-.8612a8.6035 8.6035 0 00.195-.6994c-.6435 0-1.3794-.2509-1.9964-.8127.2-1.1388-1.5674-2.2984-1.5674-3.1324 0-.9059.4582-1.4073.4582-2.6285 0-.9063-.4402-1.8895-1.104-2.5614a2.2175 2.2175 0 00-.4114-.3309c.6098.7547 1.078 1.6494 1.078 2.6858 0 1.15-.535 1.757-.535 2.8186 0 1.0612 1.5526 1.9796 1.5526 3.074 0 .4305-.1377.851-.5914 1.677.697.6962 1.605 1.076 2.1908 1.076.19 0 .292-.058.3601-.2073a9.0925 9.0925 0 00.1665-.391c.631.0245.9199.5979 1.2692.8268-.1916.2573-.393.5057-.6038.7462-.234-.2593-.5486-.6954-1.0092-.8167a9.2087 9.2087 0 01-.2613.473c.3966.108.6679.5082.878.7715a12.1305 12.1305 0 01-.7075.6754c-.1532-.2384-.3917-.541-.659-.7042a8.3639 8.3639 0 01-.3077.391c.2272.154.4277.4313.5586.6574-.2833.2272-.5763.443-.8796.6446-.1496-1.2192-1.8138-2.0548-1.3653-3.4693-.1472.2493-.3229.561-.3229.9364 0 1.024 1.0908 1.8366 1.1776 2.8542-.226.1353-.4573.2625-.693.383-.0392-1.1185-1.194-2.3425-1.194-3.2604 0-1.0248 1.342-2.054 1.342-3.2636 0-1.2105-1.5485-2.0484-1.5485-3.1112 0-1.062.6586-1.673.6586-3.0343 0-.9972-.4738-2.0063-1.2056-2.651-.1297-.1144-.2573-.2052-.4106-.2849.6903.828 1.0904 1.579 1.0904 2.7186 0 1.2801-.7546 1.9908-.7546 3.244 0 1.2537 1.5197 1.9507 1.5197 3.1192 0 1.1684-1.4145 2.1532-1.4145 3.3536 0 1.092 1.2468 2.182 1.2653 3.4777a11.7704 11.7704 0 01-.8327.3257c.1584-1.3089-1.245-2.659-1.245-3.727 0-1.1676 1.4674-2.1712 1.4674-3.43 0-1.2597-1.4917-1.8451-1.4917-3.138 0-1.292.9151-2.0075.9151-3.4352 0-1.1129-.5494-2.1136-1.352-2.7338l-.0509-.0385c-.0756-.056-.138.0116-.0844.078.5682.7095.8719 1.427.8719 2.4894 0 1.306-1.0512 2.3673-1.0512 3.6325 0 1.4934 1.4117 1.9203 1.4117 3.1456 0 1.2248-1.5137 2.2048-1.5137 3.5053 0 1.206 1.4325 2.5445 1.1868 3.9366a11.6645 11.6645 0 01-.8743.192c.2689-1.7334-1.1364-2.9782-1.1364-4.1122 0-1.2277 1.5677-2.322 1.5677-3.5217 0-1.1316-1.1252-1.5014-1.2732-2.659-.0204-.158-.1473-.2753-.3221-.2461-.2285.0416-.5214.192-.9816.192-.4602 0-.753-.1508-.982-.192-.1744-.0288-.3013.0884-.3217.246-.1476 1.1577-1.2736 1.527-1.2736 2.659 0 1.1997 1.5681 2.2937 1.5681 3.5218 0 1.134-1.4053 2.3788-1.1368 4.1123a12.1233 12.1233 0 01-.8743-.1921c-.2457-1.3921 1.1872-2.7306 1.1872-3.9366 0-1.3005-1.5141-2.2805-1.5141-3.5053 0-1.2253 1.412-1.6522 1.412-3.1456 0-1.2652-1.0515-2.326-1.0515-3.6325 0-1.062.3037-1.7795.8723-2.4893.0532-.0665-.0088-.134-.0848-.078l-.0504.0384c-.802.6186-1.351 1.6193-1.351 2.7322 0 1.4277.9152 2.1431.9152 3.4352 0 1.2925-1.4917 1.878-1.4917 3.138 0 1.2588 1.4673 2.2624 1.4673 3.43 0 1.0684-1.4033 2.4181-1.2445 3.727a11.8995 11.8995 0 01-.833-.3257c.0188-1.2957 1.2648-2.3861 1.2648-3.4777 0-1.2004-1.4137-2.1852-1.4137-3.3536 0-1.1685 1.519-1.8655 1.519-3.1192 0-1.2532-.7543-1.9639-.7543-3.244 0-1.1396.3997-1.8907 1.09-2.7186-.1537.0797-.281.1705-.4102.285-.7318.6446-1.2052 1.6537-1.2052 2.651 0 1.3612.6586 1.9722.6586 3.0342 0 1.0628-1.5485 1.9007-1.5485 3.1112 0 1.2096 1.342 2.2392 1.342 3.2636 0 .9183-1.1556 2.1423-1.1944 3.2604a11.8754 11.8754 0 01-.693-.383c.0872-1.0176 1.1776-1.8303 1.1776-2.8542 0-.3754-.1753-.687-.323-.9364.4486 1.4145-1.2156 2.25-1.3652 3.4693a12.1204 12.1204 0 01-.8796-.6446c.1305-.2257.331-.5034.5586-.6575a7.9134 7.9134 0 01-.3077-.391c-.2677.1633-.5066.4659-.6594.7043a12.2459 12.2459 0 01-.707-.6754c.21-.2633.4813-.6635.8779-.7715a9.0433 9.0433 0 01-.2613-.473c-.4606.1213-.7755.5574-1.0092.8167a12.141 12.141 0 01-.6038-.7462c.3493-.229.6382-.8027 1.2688-.8267.0529.1312.1085.2617.1669.3909.068.1493.1705.2073.3601.2073.5858 0 1.4934-.3798 2.1908-1.076-.4537-.826-.5914-1.2465-.5914-1.677 0-1.094 1.5526-2.0124 1.5526-3.074 0-1.0615-.535-1.6686-.535-2.8186 0-1.0364.4682-1.9311 1.078-2.6858a2.2175 2.2175 0 00-.4114.331c-.6638.6722-1.104 1.655-1.104 2.5613 0 1.2212.4586 1.7226.4586 2.6285 0 .834-1.7679 1.9936-1.5678 3.1324-.617.5618-1.3529.8127-1.9967.8127a9.305 9.305 0 00.1949.6994c-.7251.0385-1.0568.6567-1.4398.8612a12.0872 12.0872 0 01-.5302-.8768c.6455-.0672.84-.897 1.7419-.8339a9.1275 9.1275 0 01-.1185-.665c-1.038-.0696-1.2732.8059-1.9555.8431a12.04 12.04 0 01-.3965-.948l2.27-.8659-.0048-.2805c0-.1696.0052-.3377.0144-.5041-1.1688-.0273-1.5246.976-2.5345.8767a12.106 12.106 0 01-.241-.9708c1.2766.158 1.7395-.9151 2.888-.9143a8.7482 8.7482 0 01.2024-.9036c-1.392-.0604-1.8779 1.1505-3.2364.9252a11.7352 11.7352 0 01-.076-.8527c1.5794.1764 2.1716-1.122 3.6097-.9632a8.4303 8.4303 0 01.471-.9963c-1.803-.317-2.4153 1.1908-4.0935.9591C.1813 5.2805 5.4844.0898 12 .0898S23.8187 5.2805 24 11.753c-1.6786.2317-2.2908-1.2757-4.0935-.9591.1773.32.335.6526.471.9963 1.4373-.1592 2.0295 1.1396 3.6093.9632zm-17.147-5.035c-.884-.3613-1.954-.278-2.868.309-.1416-.8504-.603-1.6058-1.26-2.0616-.0908-.0628-.1853-.0032-.1769.102.1389 1.7967-.9115 3.3569-2.2032 4.7282 1.3313.4001 2.4645-1.3141 4.1912-.7159a9.0364 9.0364 0 012.3168-2.3617zM12 6.6314c-1.1144 0-2.048.6303-2.2924 1.4446-.0188.0624.0068.1028.0788.0704.2005-.09.4285-.1333.6762-.1333.4546 0 .8551.1669 1.092.4574.1049.3457.1137.8463-.0048 1.132-.1872-.042-.2545-.1868-.4373-.1868-.1829 0-.3245.1284-.6347.1284-.3097 0-.346-.1465-.5498-.1465-.2396 0-.2837.247-.2837.5254 0 1.2417 1.1413 2.9503 2.3553 2.9503 1.2136 0 2.3549-1.7086 2.3549-2.9503 0-.2785-.0573-.517-.3077-.5494-.1249.09-.2397.1705-.5254.1705-.3102 0-.3958-.1284-.5783-.1284-.2204 0-.1984.465-.4601.491-.1745-.4194-.1829-.9572-.038-1.4362.2373-.2905.6374-.4574 1.092-.4574.2477 0 .4773.0437.6758.1333.0724.0324.0976-.0084.0788-.0704-.244-.8143-1.1772-1.4446-2.2916-1.4446zm1.7743 1.7815c-.2673 0-.5807.082-.7775.3013-.0204.0596-.0204.1484.0084.2077.4845-.166.9119-.1725 1.1184.0584.11-.1.1452-.19.1452-.2945 0-.1613-.164-.273-.4945-.273zm-3.8979.5674c.2337-.234.7263-.224 1.238-.0352.0225-.2545-.4333-.5326-.8887-.5326-.3309 0-.4945.1116-.4945.2733 0 .1044.0352.1949.1452.2945zm7.6804-4.2031c-.8799.0628-1.6442.3649-2.2624.8683.2625-.7443.5958-1.3953 1.0184-2.0264-1.1204.1189-2.0572.5286-2.7406 1.2289l-.535-1.4025 1.1876-1.0488-1.5902-.1125L12 .8053l-.635 1.479-1.5902.1124 1.1876 1.0488-.5346 1.4025c-.6838-.7003-1.6206-1.11-2.7402-1.2289.4218.6315.7551 1.2825 1.0176 2.0264-.6178-.5038-1.3821-.806-2.262-.8683.5278.6786.9955 1.402 1.342 2.18.0393.0876.1233.1164.2141.0712 1.2053-.599 2.5634-.936 4.0003-.936 1.437 0 2.7946.3374 4.0007.936.0908.0452.1748.0164.2136-.0712.347-.778.8147-1.5014 1.343-2.18zm1.9211 5.3035c1.7259-.5982 2.8595 1.1156 4.1908.7159-1.2917-1.3713-2.3417-2.9315-2.2028-4.7282.0084-.1052-.0865-.1652-.1769-.102-.6574.4558-1.1188 1.2112-1.26 2.0615-.9144-.587-1.984-.6706-2.868-.3089a9.0431 9.0431 0 012.317 2.3617z"};
 const BRANDS=[
- {label:"McDonald's",rx:"McDonald",slug:"mcdonalds",ab:"M"},
- {label:"Burger King",rx:"Burger King",slug:"burgerking",ab:"BK"},
- {label:"KFC",rx:"KFC",slug:"kfc",ab:"K"},
- {label:"Quick",rx:"^Quick",ab:"Q"},
- {label:"Courte Paille",rx:"Courte ?Paille",ab:"CP"},
- {label:"Buffalo Grill",rx:"Buffalo Grill",ab:"BG"},
- {label:"Flunch",rx:"Flunch",ab:"F"},
+ {label:"McDonald's",rx:"McDonald",slug:"mcdonalds",bg:"#DA291C",fg:"#FFC72C",ab:"M"},
+ {label:"Burger King",rx:"Burger King",slug:"burgerking",bg:"#D62300",fg:"#FFFFFF",ab:"BK"},
+ {label:"KFC",rx:"KFC",slug:"kfc",bg:"#E4002B",fg:"#FFFFFF",ab:"K"},
+ {label:"Quick",rx:"^Quick",img:"quick",ab:"Q"},
+ {label:"Courte Paille",rx:"Courte ?Paille",img:"courtepaille",ab:"CP"},
+ {label:"Buffalo Grill",rx:"Buffalo Grill",img:"buffalo",ab:"BG"},
+ {label:"Flunch",rx:"Flunch",img:"flunch",ab:"F"},
  {label:"Subway",rx:"Subway",ab:"S"},
- {label:"Paul",rx:"^Paul$",ab:"P"},
- {label:"Brioche Dorée",rx:"Brioche D",ab:"BD"},
- {label:"Starbucks",rx:"Starbucks",slug:"starbucks",ab:"S"},
- {label:"O'Tacos",rx:"O'?Tacos",ab:"OT"}
+ {label:"Paul",rx:"^Paul$",img:"paul",ab:"P"},
+ {label:"Brioche Dorée",rx:"Brioche D",img:"brioche",ab:"BD"},
+ {label:"Starbucks",rx:"Starbucks",slug:"starbucks",bg:"#006241",fg:"#FFFFFF",ab:"S"},
+ {label:"O'Tacos",rx:"O'?Tacos",img:"otacos",ab:"OT"}
 ];
 const FETCH_RADIUS=1000;
 const EPS=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.private.coffee/api/interpreter'];
@@ -246,9 +261,10 @@ function brandOf(tags){
   return null;
 }
 function logo(b,tags){
-  if(b&&b.slug&&ICONS[b.slug])return `<span class="lg"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${ICONS[b.slug]}"/></svg></span>`;
+  if(b&&b.slug&&ICONS[b.slug])return `<span class="lg" style="background:${b.bg};color:${b.fg}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${ICONS[b.slug]}"/></svg></span>`;
+  if(b&&b.img)return `<span class="lg im"><img src="logos/${b.img}.png" alt="" loading="lazy"></span>`;
   const t=b?b.ab:(tags.name||tags.brand||'?').trim().charAt(0).toUpperCase();
-  return `<span class="lg">${esc(t)}</span>`;
+  return `<span class="lg mono">${esc(t)}</span>`;
 }
 
 /* ---------- Accueil ---------- */
@@ -478,19 +494,88 @@ function fmtHours(h){
 }
 
 /* ---------- Lancement ---------- */
+function loadingHtml(msg){return `<div class="load"><div style="font-weight:600;color:var(--ink)" id="lt">${msg}</div><div class="bar"><i id="lb"></i></div></div><div class="skel"></div><div class="skel"></div>`}
+async function getRoutes(a,b){
+  const r=await fetch(`https://router.project-osrm.org/route/v1/driving/${a.lon},${a.lat};${b.lon},${b.lat}?overview=full&geometries=geojson&alternatives=3&steps=true`);
+  const j=await r.json();
+  if(!j.routes||!j.routes[0])throw new Error('Itinéraire introuvable');
+  return j.routes;
+}
+/* Axes principaux d'un itinéraire : les numéros de route (A40, N205…) cumulés sur au moins 8 % du trajet */
+function mainRoads(rt){
+  const acc=new Map();let order=0;
+  for(const l of rt.legs||[])for(const st of l.steps||[]){
+    let ref=(st.ref||'').split(';')[0].replace(/\s+/g,'').toUpperCase();
+    if(!/^[ANDM]\d+/.test(ref))continue;
+    const o=acc.get(ref)||{d:0,o:order++};o.d+=st.distance;acc.set(ref,o);
+  }
+  return [...acc.entries()].filter(([k,v])=>v.d>=Math.max(8000,rt.distance*0.08)).sort((a,b)=>a[1].o-b[1].o).map(([k])=>k.replace(/^([A-Z])(\d+)/,'$1$2')).slice(0,4);
+}
+function routePreview(routes,sel){
+  const all=routes.flatMap(r=>r.geometry.coordinates);
+  let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  for(const p of all){x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1])}
+  const k=Math.cos((y0+y1)/2*Math.PI/180),W=340,H=190,pad=14;
+  const sx=(W-2*pad)/Math.max(1e-6,(x1-x0)*k),sy=(H-2*pad)/Math.max(1e-6,(y1-y0)),sc=Math.min(sx,sy);
+  const ox=(W-(x1-x0)*k*sc)/2,oy=(H-(y1-y0)*sc)/2;
+  const pt=p=>[(ox+(p[0]-x0)*k*sc).toFixed(1),(H-oy-(p[1]-y0)*sc).toFixed(1)];
+  const path=r=>{const c=r.geometry.coordinates,st=Math.max(1,Math.floor(c.length/220));let d='';for(let i=0;i<c.length;i+=st){const q=pt(c[i]);d+=(d?'L':'M')+q[0]+' '+q[1]}const q=pt(c[c.length-1]);return d+'L'+q[0]+' '+q[1]};
+  const order=routes.map((r,i)=>i).sort((a,b)=>(a===sel)-(b===sel));
+  const a=pt(routes[0].geometry.coordinates[0]),z=pt(routes[0].geometry.coordinates.at(-1));
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">${order.map(i=>`<path d="${path(routes[i])}" fill="none" stroke="${i===sel?'var(--ink)':'var(--muted)'}" stroke-opacity="${i===sel?1:.45}" stroke-width="${i===sel?3.2:2}" stroke-linecap="round" stroke-linejoin="round"/>`).join('')}
+  <circle cx="${a[0]}" cy="${a[1]}" r="5.5" fill="var(--surface)" stroke="var(--ink)" stroke-width="2.4"/><rect x="${z[0]-5.5}" y="${z[1]-5.5}" width="11" height="11" rx="2.5" fill="var(--ink)"/></svg>`;
+}
+function showChoice(){
+  state.step='choice';
+  const R=state.routes,sel=state.sel;
+  const fast=Math.min(...R.map(r=>r.duration)),short=Math.min(...R.map(r=>r.distance));
+  $('rTitle').textContent=`${state.fq} → ${state.tq}`;
+  $('rSub').textContent=R.length>1?'Par où passes-tu ?':'Un seul itinéraire trouvé';
+  let h=`<div class="map" id="mapBox">${routePreview(R,sel)}</div>`;
+  R.forEach((r,i)=>{
+    const roads=mainRoads(r);
+    let tag='';
+    if(r.duration===fast)tag='<span class="r-tag">Le plus rapide</span>';
+    else tag=`<span class="r-tag soft">+ ${fmtDur(r.duration-fast)}</span>`;
+    const extra=r.distance===short&&r.duration!==fast?' · le plus court':'';
+    h+=`<button class="rt ${i===sel?'on':''}" data-r="${i}">
+      <div class="r-top"><span class="r-dur">${fmtDur(r.duration)}</span>${tag}</div>
+      <div class="r-via">${roads.length?'via '+roads.join(' · '):'Itinéraire '+(i+1)}</div>
+      <div class="r-sub">${Math.round(r.distance/1000)} km${extra}</div></button>`;
+  });
+  h+=`<button class="cta fix" id="goRoute">Voir les restos sur cet itinéraire</button>`;
+  $('rBody').innerHTML=h;
+}
 async function run(){
   const myRun=++runId;
   $('homeErr').textContent='';
   const fq=$('from').value.trim(),tq=$('to').value.trim();
   if(!fq||!tq){$('homeErr').textContent='Renseigne un départ et une arrivée.';return}
-  $('rTitle').textContent=`${fq} → ${tq}`;$('rSub').textContent='Recherche en cours…';
-  $('rBody').innerHTML=`<div class="load"><div style="font-weight:600;color:var(--ink)" id="lt">Calcul de l'itinéraire…</div><div class="bar"><i id="lb"></i></div></div><div class="skel"></div><div class="skel"></div>`;
+  state.fq=fq;state.tq=tq;state.step='loading';
+  $('rTitle').textContent=`${fq} → ${tq}`;$('rSub').textContent='Calcul des itinéraires…';
+  $('rBody').innerHTML=loadingHtml("Calcul des itinéraires…");
   $('results').classList.add('show');$('results').scrollTop=0;
   try{
     const [f,t]=await Promise.all([geocode(fq,'from'),geocode(tq,'to')]);
     state.from=f;state.to=t;
-    state.route=await getRoute(f,t);
+    const routes=await getRoutes(f,t);
     if(myRun!==runId)return;
+    state.routes=routes;state.sel=0;
+    showChoice();
+  }catch(e){
+    $('rSub').textContent='';
+    $('rBody').innerHTML=`<div class="empty">${esc(e.message||'Erreur')}<br><br><button class="cta" style="height:48px" id="retry">Réessayer</button></div>`;
+    $('retry').onclick=run;
+  }
+}
+async function search(){
+  const myRun=++runId,fq=state.fq,tq=state.tq,f=state.from,t=state.to;
+  state.step='list';
+  $('rSub').textContent='Recherche en cours…';
+  $('rBody').innerHTML=loadingHtml("Recherche des arrêts…");
+  $('results').scrollTop=0;
+  try{
+    state.route=state.routes[state.sel];
     prepare(state.route.geometry.coordinates);
     const labels=[...state.selected];
     if(POIS){
@@ -530,12 +615,15 @@ async function run(){
   }catch(e){
     $('rSub').textContent='';
     $('rBody').innerHTML=`<div class="empty">${esc(e.message||'Erreur')}<br><br><button class="cta" style="height:48px" id="retry">Réessayer</button></div>`;
-    $('retry').onclick=run;
+    $('retry').onclick=search;
   }
 }
 loadPois();
 $('go').onclick=run;
-$('back').onclick=()=>$('results').classList.remove('show');
+$('back').onclick=()=>{
+  if(state.step==='list'&&state.routes&&state.routes.length){showChoice();return}
+  runId++;$('results').classList.remove('show');
+};
 
 /* ---------- Résultats ---------- */
 function groupItems(list){
@@ -580,6 +668,9 @@ function render(){
   $('results').scrollTop=keep;
 }
 $('rBody').addEventListener('click',e=>{
+  const rt=e.target.closest('[data-r]');
+  if(rt){state.sel=+rt.dataset.r;showChoice();return}
+  if(e.target.closest('#goRoute')){search();return}
   const t=e.target.closest('[data-t]');if(t){state.type=t.dataset.t;render();return}
   const d=e.target.closest('[data-d]');if(d){state.maxDist=+d.dataset.d;render();return}
   const it=e.target.closest('.it');if(it){openSheet(state.groups[+it.dataset.g].items[+it.dataset.i])}
