@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#FAFAF8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0A0A0A" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
@@ -149,8 +151,18 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
 .go3 a.p{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .hide{display:none!important}
 /* Choix de l'itinéraire */
-.map{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:14px;margin-bottom:14px}
-.map svg{display:block;width:100%;height:190px}
+.map{position:relative;z-index:0;isolation:isolate;height:330px;background:var(--surface);border:1px solid var(--line);border-radius:22px;overflow:hidden;margin-bottom:14px}
+.map.fb{padding:14px;height:auto}
+.map.fb svg{display:block;width:100%;height:190px}
+.map .leaflet-container{width:100%;height:100%;background:var(--surface);font:inherit}
+.map .leaflet-control-attribution{font-size:9.5px;background:var(--glass);color:var(--muted)}
+.rlab span{display:inline-block;transform:translate(-50%,-50%);background:var(--surface);color:var(--ink);border:1.5px solid var(--ink);border-radius:999px;padding:4px 10px;font:700 12.5px/1 "Inter",system-ui,sans-serif;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.rlab.on span{background:var(--ink);color:var(--bg)}
+.pin-a,.pin-b{border-radius:50%;box-sizing:border-box}
+.pin-a{background:var(--surface);border:3px solid var(--ink)}
+.pin-b{background:var(--ink);border-radius:4px;border:2px solid var(--surface)}
+.r-kinds{display:flex;gap:6px;margin-top:8px}
+.r-kinds span{font-size:11.5px;font-weight:600;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 9px}
 .rt{display:block;width:100%;text-align:left;background:var(--surface);border:1.5px solid var(--line);border-radius:20px;padding:16px 18px;margin-bottom:10px;transition:border-color .15s,background .15s}
 .rt.on{border-color:var(--ink);box-shadow:inset 0 0 0 .5px var(--ink)}
 .rt .r-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
@@ -495,11 +507,27 @@ function fmtHours(h){
 
 /* ---------- Lancement ---------- */
 function loadingHtml(msg){return `<div class="load"><div style="font-weight:600;color:var(--ink)" id="lt">${msg}</div><div class="bar"><i id="lb"></i></div></div><div class="skel"></div><div class="skel"></div>`}
-async function getRoutes(a,b){
-  const r=await fetch(`https://router.project-osrm.org/route/v1/driving/${a.lon},${a.lat};${b.lon},${b.lat}?overview=full&geometries=geojson&alternatives=3&steps=true`);
+async function fetchRoutes(a,b,extra){
+  const r=await fetch(`https://router.project-osrm.org/route/v1/driving/${a.lon},${a.lat};${b.lon},${b.lat}?overview=full&geometries=geojson&steps=true&${extra}`);
   const j=await r.json();
-  if(!j.routes||!j.routes[0])throw new Error('Itinéraire introuvable');
-  return j.routes;
+  return j.routes||[];
+}
+async function getRoutes(a,b){
+  const [main,nomw]=await Promise.allSettled([fetchRoutes(a,b,'alternatives=3'),fetchRoutes(a,b,'exclude=motorway')]);
+  const R=main.status==='fulfilled'?[...main.value]:[];
+  if(nomw.status==='fulfilled')R.push(...nomw.value);
+  if(!R.length)throw new Error('Itinéraire introuvable');
+  const out=[];
+  for(const r of R.sort((x,y)=>x.duration-y.duration)){
+    if(out.some(o=>Math.abs(o.duration-r.duration)<o.duration*0.02&&Math.abs(o.distance-r.distance)<o.distance*0.02))continue;
+    out.push(r);
+  }
+  return out.slice(0,4);
+}
+function autoShare(rt){
+  let a=0,t=0;
+  for(const l of rt.legs||[])for(const st of l.steps||[]){t+=st.distance;if(/^A\s?\d/i.test((st.ref||'').split(';')[0].trim()))a+=st.distance}
+  return t?a/t:0;
 }
 /* Axes principaux d'un itinéraire : les numéros de route (A40, N205…) cumulés sur au moins 8 % du trajet */
 function mainRoads(rt){
@@ -525,26 +553,71 @@ function routePreview(routes,sel){
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">${order.map(i=>`<path d="${path(routes[i])}" fill="none" stroke="${i===sel?'var(--ink)':'var(--muted)'}" stroke-opacity="${i===sel?1:.45}" stroke-width="${i===sel?3.2:2}" stroke-linecap="round" stroke-linejoin="round"/>`).join('')}
   <circle cx="${a[0]}" cy="${a[1]}" r="5.5" fill="var(--surface)" stroke="var(--ink)" stroke-width="2.4"/><rect x="${z[0]-5.5}" y="${z[1]-5.5}" width="11" height="11" rx="2.5" fill="var(--ink)"/></svg>`;
 }
+let MAP=null,MLINES=[],MLABS=[];
+function buildMap(){
+  const R=state.routes;
+  if(MAP){MAP.remove();MAP=null}
+  const dark=matchMedia('(prefers-color-scheme: dark)').matches;
+  state.dark=dark;
+  MAP=L.map('mapBox',{zoomControl:false,scrollWheelZoom:false,attributionControl:true});
+  L.tileLayer(`https://{s}.basemaps.cartocdn.com/${dark?'dark_all':'light_all'}/{z}/{x}/{y}{r}.png`,{maxZoom:18,subdomains:'abcd',attribution:'© OpenStreetMap · © CARTO'}).addTo(MAP);
+  const fr=[.5,.35,.65,.22];
+  MLINES=[];MLABS=[];
+  R.forEach((r,i)=>{
+    const ll=r.geometry.coordinates.map(c=>[c[1],c[0]]);
+    const line=L.polyline(ll,{weight:5,lineCap:'round',lineJoin:'round'}).addTo(MAP);
+    line.on('click',()=>pickRoute(i));
+    const mid=ll[Math.floor(ll.length*fr[i%4])];
+    const lab=L.marker(mid,{icon:L.divIcon({className:'rlab',html:'<span>'+fmtDur(r.duration)+'</span>',iconSize:[0,0]})}).addTo(MAP);
+    lab.on('click',()=>pickRoute(i));
+    MLINES.push(line);MLABS.push(lab);
+  });
+  const c=R[0].geometry.coordinates;
+  L.marker([c[0][1],c[0][0]],{icon:L.divIcon({className:'',html:'<div class="pin-a" style="width:16px;height:16px"></div>',iconSize:[16,16]}),interactive:false}).addTo(MAP);
+  L.marker([c.at(-1)[1],c.at(-1)[0]],{icon:L.divIcon({className:'',html:'<div class="pin-b" style="width:16px;height:16px"></div>',iconSize:[16,16]}),interactive:false}).addTo(MAP);
+  const all=R.flatMap(r=>r.geometry.coordinates.map(p=>[p[1],p[0]]));
+  const fit=()=>{MAP.invalidateSize();MAP.fitBounds(L.latLngBounds(all),{padding:[34,34],animate:false})};
+  fit();setTimeout(fit,450);
+  styleRoutes();
+}
+function styleRoutes(){
+  const dark=state.dark;
+  MLINES.forEach((ln,i)=>{
+    const on=i===state.sel;
+    ln.setStyle({color:on?(dark?'#FFFFFF':'#0A0A0A'):'#8A8A8A',opacity:on?1:.8,weight:on?6:5});
+    if(on)ln.bringToFront();
+    MLABS[i].setZIndexOffset(on?1000:0);
+    const el=MLABS[i].getElement();if(el)el.classList.toggle('on',on);
+  });
+}
+function pickRoute(i){
+  state.sel=i;
+  document.querySelectorAll('.rt').forEach(x=>x.classList.toggle('on',+x.dataset.r===i));
+  if(MAP)styleRoutes();
+  else{const m=$('mapBox');if(m)m.innerHTML=routePreview(state.routes,i)}
+}
 function showChoice(){
   state.step='choice';
-  const R=state.routes,sel=state.sel;
+  const R=state.routes;
   const fast=Math.min(...R.map(r=>r.duration)),short=Math.min(...R.map(r=>r.distance));
   $('rTitle').textContent=`${state.fq} → ${state.tq}`;
-  $('rSub').textContent=R.length>1?'Par où passes-tu ?':'Un seul itinéraire trouvé';
-  let h=`<div class="map" id="mapBox">${routePreview(R,sel)}</div>`;
+  $('rSub').textContent=R.length>1?'Touche une ligne ou une carte pour choisir':'Un seul itinéraire trouvé';
+  const hasL=!!window.L;
+  let h=`<div class="map ${hasL?'':'fb'}" id="mapBox">${hasL?'':routePreview(R,state.sel)}</div>`;
   R.forEach((r,i)=>{
-    const roads=mainRoads(r);
-    let tag='';
-    if(r.duration===fast)tag='<span class="r-tag">Le plus rapide</span>';
-    else tag=`<span class="r-tag soft">+ ${fmtDur(r.duration-fast)}</span>`;
-    const extra=r.distance===short&&r.duration!==fast?' · le plus court':'';
-    h+=`<button class="rt ${i===sel?'on':''}" data-r="${i}">
+    const roads=mainRoads(r),sh=autoShare(r);
+    const tag=r.duration===fast?'<span class="r-tag">Le plus rapide</span>':`<span class="r-tag soft">+ ${fmtDur(r.duration-fast)}</span>`;
+    const kind=sh>=0.5?'Autoroute':sh<=0.1?'Sans autoroute':'Autoroute en partie';
+    const extra=r.distance===short&&r.duration!==fast?'<span>Le plus court</span>':'';
+    h+=`<button class="rt ${i===state.sel?'on':''}" data-r="${i}">
       <div class="r-top"><span class="r-dur">${fmtDur(r.duration)}</span>${tag}</div>
       <div class="r-via">${roads.length?'via '+roads.join(' · '):'Itinéraire '+(i+1)}</div>
-      <div class="r-sub">${Math.round(r.distance/1000)} km${extra}</div></button>`;
+      <div class="r-sub">${Math.round(r.distance/1000)} km</div>
+      <div class="r-kinds"><span>${kind}</span>${extra}</div></button>`;
   });
   h+=`<button class="cta fix" id="goRoute">Voir les restos sur cet itinéraire</button>`;
   $('rBody').innerHTML=h;
+  if(hasL)buildMap();
 }
 async function run(){
   const myRun=++runId;
@@ -669,7 +742,7 @@ function render(){
 }
 $('rBody').addEventListener('click',e=>{
   const rt=e.target.closest('[data-r]');
-  if(rt){state.sel=+rt.dataset.r;showChoice();return}
+  if(rt){pickRoute(+rt.dataset.r);return}
   if(e.target.closest('#goRoute')){search();return}
   const t=e.target.closest('[data-t]');if(t){state.type=t.dataset.t;render();return}
   const d=e.target.closest('[data-d]');if(d){state.maxDist=+d.dataset.d;render();return}
