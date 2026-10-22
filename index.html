@@ -801,6 +801,7 @@ function openSheet(p){
   const addr=t.addr||[[t['addr:housenumber'],t['addr:street']].filter(Boolean).join(' '),t['addr:city']].filter(Boolean).join(', ');
   const f=state.from,to=state.to;
   const gm=`https://www.google.com/maps/dir/?api=1&origin=${f.lat},${f.lon}&destination=${to.lat},${to.lon}&waypoints=${p.lat},${p.lon}&travelmode=driving`;
+  const gs=`https://www.google.com/maps/search/${encodeURIComponent(name)}/@${p.lat},${p.lon},18z`;
   const wz=`https://waze.com/ul?ll=${p.lat},${p.lon}&navigate=yes`;
   const ap=`https://maps.apple.com/?daddr=${p.lat},${p.lon}&dirflg=d`;
   const bd=logo(b,t);
@@ -811,7 +812,7 @@ function openSheet(p){
   ${t.aire?`<div class="info"><span class="l">Lieu</span><span>Aire d'autoroute ou de service</span></div>`:''}
   ${addr?`<div class="info"><span class="l">Adresse</span><span>${esc(addr)}</span></div>`:''}
   ${t.opening_hours?`<div class="info"><span class="l">Horaires</span><span>${esc(fmtHours(t.opening_hours))}</span></div>`:''}
-  <div class="go3"><a class="p" href="${gm}" target="_blank" rel="noopener">Ajouter l'arrêt dans Google Maps</a><a href="${wz}" target="_blank" rel="noopener">Y aller avec Waze</a><a href="${ap}" target="_blank" rel="noopener">Y aller avec Plans</a></div>`;
+  <div class="go3"><a class="p" href="${gm}" target="_blank" rel="noopener">Ajouter l'arrêt dans Google Maps</a><a href="${gs}" target="_blank" rel="noopener">Voir la fiche sur Google Maps</a><a href="${wz}" target="_blank" rel="noopener">Y aller avec Waze</a><a href="${ap}" target="_blank" rel="noopener">Y aller avec Plans</a></div>`;
   $('ov').classList.add('show');$('sheet').classList.add('show');
 }
 function closeSheet(){$('ov').classList.remove('show');$('sheet').classList.remove('show')}
