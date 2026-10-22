@@ -1,4 +1,4 @@
-const CACHE = 'croque-route-v3';
+const CACHE = 'croque-route-v4';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -17,7 +17,7 @@ self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET' || url.origin !== location.origin) return;
   e.respondWith(
-    fetch(e.request)
+    fetch(e.request,{cache:'no-cache'})
       .then(r => {
         const copy = r.clone();
         caches.open(CACHE).then(c => c.put(e.request, copy));
