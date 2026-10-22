@@ -148,12 +148,18 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
 .info .l{width:84px;color:var(--muted);flex:none}
 .go3{display:flex;flex-direction:column;gap:10px;margin-top:16px}
 .go3 a{display:flex;align-items:center;justify-content:center;height:52px;border-radius:10px;font-weight:600;text-decoration:none;background:var(--surface);color:var(--ink);border:1px solid transparent}
+.go-lbl{font-size:12px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:-2px}
+.go-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .go3 a.p{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .hide{display:none!important}
 .loc{position:absolute;top:12px;right:58px;width:36px;height:36px;border-radius:50%;background:var(--bg);display:grid;place-items:center;z-index:2}
 .loc.on{color:#2B7FFF}
 #from{padding-right:44px}
 #listMap{height:260px}
+#listMap.full{position:fixed;inset:0;z-index:30;height:100%;border-radius:0;margin:0}
+.mexp{width:36px;height:36px;border-radius:50%;background:var(--bg);color:var(--ink);display:grid;place-items:center;box-shadow:0 2px 8px rgba(0,0,0,.25);border:0;cursor:pointer}
+.map .leaflet-bar a{border-radius:50%!important;margin-bottom:6px;border:0;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.map .leaflet-control-zoom{border:0;box-shadow:none}
 .pm{background:none;border:0}
 .pm .lg{width:28px;height:28px;box-shadow:0 0 0 2px #fff,0 2px 8px rgba(0,0,0,.3)}
 .pm .lg svg{width:15px;height:15px}
@@ -497,7 +503,7 @@ function localSearch(){
     if(l.dist>FETCH_RADIUS)continue;
     const tags={name:q[2],amenity:types[q[4]]};
     if(q[3]>=0)tags.brand=POIS.brands[q[3]];
-    if(q[5])tags.aire=1;
+    if(q[5]){tags.aire=1;const an=POIS.aires&&POIS.aires[q[5]-1];if(an)tags.aireName=an}
     if(q[6])tags.opening_hours=q[6];
     if(q[7])tags.addr=q[7];
     out.push({id:'l'+k,lat:q[0],lon:q[1],tags,dist:l.dist,pos:l.pos});
@@ -662,7 +668,7 @@ function pickRoute(i){
   else{const m=$('mapBox');if(m)m.innerHTML=routePreview(state.routes,i)}
 }
 function showChoice(){
-  state.step='choice';stopFollow();$('listMap').classList.add('hide');
+  state.step='choice';stopFollow();$('listMap').classList.add('hide');$('listMap').classList.remove('full');
   const R=state.routes;
   const fast=Math.min(...R.map(r=>r.duration)),short=Math.min(...R.map(r=>r.distance));
   $('rTitle').textContent=`${state.fq} → ${state.tq}`;
@@ -774,6 +780,17 @@ function groupItems(list){
   return g;
 }
 /* ---------- Carte de la liste + position en direct ---------- */
+const MEXP_OPEN='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
+const MEXP_CLOSE='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+function toggleFull(){
+  const box=$('listMap'),full=!box.classList.contains('full');
+  box.classList.toggle('full',full);
+  $('mapExp').innerHTML=full?MEXP_CLOSE:MEXP_OPEN;
+  $('mapExp').setAttribute('aria-label',full?'Fermer la carte':'Agrandir la carte');
+  if(full){LMAP.dragging.enable();LMAP.scrollWheelZoom.enable()}
+  else{LMAP.scrollWheelZoom.disable();if(L.Browser.mobile)LMAP.dragging.disable()}
+  setTimeout(()=>{LMAP.invalidateSize();if(LROUTE)LMAP.fitBounds(L.latLngBounds(LROUTE.geometry.coordinates.map(c=>[c[1],c[0]])),{padding:[40,40],animate:false});box.classList.toggle('z-low',LMAP.getZoom()<10)},60);
+}
 let LMAP=null,LMK=null,LROUTE=null,LME=null;
 function updateListMap(list){
   const box=$('listMap');
@@ -783,7 +800,12 @@ function updateListMap(list){
   if(!LMAP||LROUTE!==state.route){
     if(LMAP){LMAP.remove();LMAP=null}
     LROUTE=state.route;
-    LMAP=L.map('listMap',{zoomControl:false,scrollWheelZoom:false});
+    LMAP=L.map('listMap',{zoomControl:false,scrollWheelZoom:false,dragging:!L.Browser.mobile,tap:false});
+    L.control.zoom({position:'bottomright',zoomInTitle:'Zoomer',zoomOutTitle:'Dézoomer'}).addTo(LMAP);
+    const Ctl=L.Control.extend({onAdd(){
+      const b=L.DomUtil.create('button','mexp');b.type='button';b.id='mapExp';b.setAttribute('aria-label','Agrandir la carte');
+      b.innerHTML=MEXP_OPEN;L.DomEvent.disableClickPropagation(b);b.onclick=toggleFull;return b}});
+    new Ctl({position:'topright'}).addTo(LMAP);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(LMAP);
     const ll=state.route.geometry.coordinates.map(c=>[c[1],c[0]]);
     L.polyline(ll,{color:dark?'#FFFFFF':'#000000',weight:5,opacity:.85,lineCap:'round',lineJoin:'round'}).addTo(LMAP);
@@ -880,12 +902,16 @@ function openSheet(p){
   const bd=logo(b,t);
   $('sheet').innerHTML=`<div class="grab"></div>
   <div class="sh-h">${bd}<div style="min-width:0"><div class="n">${esc(name)}</div><div class="k">${esc(type)}${t.cuisine?' · '+esc(t.cuisine.split(';')[0].replace(/_/g,' ')):''}</div></div></div>
-  <div class="info"><span class="l">Sur ta route</span><span>${axe?'Quasi aucun détour':`À ${fmtDist(p.dist)} de la route · détour estimé ~${detour} min`}</span></div>
-  <div class="info"><span class="l">Position</span><span>${me?`À ${fmtDist(delta)} devant toi, dans ${eta} (vers ${arr})`:`Au km ${km}, dans ${eta}`}</span></div>
-  ${t.aire?`<div class="info"><span class="l">Lieu</span><span>Aire d'autoroute ou de service</span></div>`:''}
+  <div class="info"><span class="l">Position</span><span>${me?`À ${fmtDist(delta)} de ta position, dans ${eta} (vers ${arr})`:`À ${km} km de ${esc(state.from.name)}, dans ${eta}`}</span></div>
+  ${t.aire?`<div class="info"><span class="l">Lieu</span><span>${esc(t.aireName||"Aire d'autoroute ou de service")}</span></div>`:''}
   ${addr?`<div class="info"><span class="l">Adresse</span><span>${esc(addr)}</span></div>`:''}
   ${t.opening_hours?`<div class="info"><span class="l">Horaires</span><span>${esc(fmtHours(t.opening_hours))}</span></div>`:''}
-  <div class="go3"><a class="p" href="${gm}" target="_blank" rel="noopener">Ajouter l'arrêt dans Google Maps</a><a href="${gs}" target="_blank" rel="noopener">Voir la fiche sur Google Maps</a><a href="${wz}" target="_blank" rel="noopener">Y aller avec Waze</a><a href="${ap}" target="_blank" rel="noopener">Y aller avec Plans</a></div>`;
+  <div class="go3">
+    <div class="go-lbl">Google Maps</div>
+    <div class="go-row"><a class="p" href="${gm}" target="_blank" rel="noopener">Ajouter l'arrêt</a><a href="${gs}" target="_blank" rel="noopener">Voir la fiche</a></div>
+    <a href="${wz}" target="_blank" rel="noopener">Lancer la navigation avec Waze</a>
+    <a href="${ap}" target="_blank" rel="noopener">Lancer la navigation avec Plans</a>
+  </div>`;
   $('ov').classList.add('show');$('sheet').classList.add('show');
 }
 function closeSheet(){$('ov').classList.remove('show');$('sheet').classList.remove('show')}
