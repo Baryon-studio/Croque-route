@@ -18,6 +18,7 @@ Dans le Terminal :
 ## 3. Activer l'hébergement
 - Dépôt > Settings > Pages > Source : Deploy from a branch > main > / (root) > Save.
 - L'app sera à l'adresse : https://TON-PSEUDO.github.io/croque-route/
+- Version actuelle hébergée sur Cloudflare Pages (publication plus rapide) : https://croque-route.pages.dev/
 
 ## 4. Construire la base (une fois)
 - Dépôt > Actions > "Construire la base de restaurants" > Run workflow.
