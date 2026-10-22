@@ -914,7 +914,8 @@ function openSheet(p){
   const addr=t.addr||[[t['addr:housenumber'],t['addr:street']].filter(Boolean).join(' '),t['addr:city']].filter(Boolean).join(', ');
   const f=state.from,to=state.to;
   const gm=`https://www.google.com/maps/dir/?api=1&origin=${f.lat},${f.lon}&destination=${to.lat},${to.lon}&waypoints=${p.lat},${p.lon}&travelmode=driving`;
-  const gs=`https://www.google.com/maps/search/${encodeURIComponent(name)}/@${p.lat},${p.lon},18z`;
+  const gq=[name,addr||t.aireName].filter(Boolean).join(', ');
+  const gs=addr||t.aireName?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(gq)}`:`https://www.google.com/maps/search/${encodeURIComponent(name)}/@${p.lat},${p.lon},18z`;
   const wz=`https://waze.com/ul?ll=${p.lat},${p.lon}&navigate=yes`;
   const ap=`https://maps.apple.com/?daddr=${p.lat},${p.lon}&dirflg=d`;
   const bd=logo(b,t);
