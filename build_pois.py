@@ -47,12 +47,17 @@ def build_query(bb, all_fastfood):
     s, w, n, e = bb
     box = f"({s},{w},{n},{e})"
     extra = f'nwr["amenity"="fast_food"]["name"]{box};' if all_fastfood else ""
-    return f"""[out:json][timeout:180];
-nwr["highway"~"^(services|rest_area)$"]{box}->.sa;
-nwr["amenity"~"^(fast_food|restaurant|cafe)$"](around.sa:120)->.ap;
+    # Filtres exacts (clé=valeur) : Overpass les traite avec ses index, bien plus vite qu'une expression régulière.
+    near = "".join(f'nwr["amenity"="{a}"](around.sa:120);' for a in TYPES)
+    brands = "".join(
+        f'nwr["amenity"="{a}"]["brand"~"{RX}",i]{box};nwr["amenity"="{a}"]["name"~"{RX}",i]{box};'
+        for a in TYPES
+    )
+    return f"""[out:json][timeout:90];
+(nwr["highway"="services"]{box};nwr["highway"="rest_area"]{box};)->.sa;
+({near})->.ap;
 (
-  nwr["amenity"~"^(fast_food|restaurant|cafe)$"]["brand"~"{RX}",i]{box};
-  nwr["amenity"~"^(fast_food|restaurant|cafe)$"]["name"~"{RX}",i]{box};
+  {brands}
   .ap;
   {extra}
 )->.u;
@@ -64,14 +69,14 @@ nwr["amenity"~"^(fast_food|restaurant|cafe)$"](around.sa:120)->.ap;
 def fetch_tile(query, label):
     """Interroge Overpass avec nouvelles tentatives et serveurs de secours."""
     data = urllib.parse.urlencode({"data": query}).encode()
-    for attempt in range(6):
+    for attempt in range(3):
         for ep in ENDPOINTS:
             try:
                 req = urllib.request.Request(ep, data=data, headers={"User-Agent": "croque-route/1.0"})
-                with urllib.request.urlopen(req, timeout=240) as r:
+                with urllib.request.urlopen(req, timeout=120) as r:
                     return json.loads(r.read().decode("utf-8"))
             except Exception as ex:
-                print(f"    {label}: {ep.split('/')[2]} a échoué ({type(ex).__name__}), je réessaie…")
+                print(f"    {label}: {ep.split('/')[2]} a échoué ({type(ex).__name__}), je réessaie…", flush=True)
                 time.sleep(3)
         time.sleep(10 * (attempt + 1))
     return None
@@ -132,15 +137,21 @@ def process(tile_results, all_fastfood):
 def build(all_fastfood):
     results, failed = [], 0
     all_tiles = list(tiles())
+    start = time.time()
     for i, bb in enumerate(all_tiles, 1):
         label = f"zone {i}/{len(all_tiles)}"
+        if time.time() - start > 70 * 60:  # garde-fou : on s'arrête avant la limite de GitHub (90 min)
+            failed += 1
+            results.append(None)
+            print(f"  {label} : ignorée (temps écoulé)", flush=True)
+            continue
         print(f"Téléchargement {label}…", flush=True)
         res = fetch_tile(build_query(bb, all_fastfood), label)
         if res is None:
             failed += 1
-            print(f"  {label} : échec définitif")
+            print(f"  {label} : échec définitif", flush=True)
         else:
-            print(f"  {label} : {len(res.get('elements', []))} éléments")
+            print(f"  {label} : {len(res.get('elements', []))} éléments ({int(time.time() - start)} s)", flush=True)
         results.append(res)
         time.sleep(2)
     p = process(results, all_fastfood)
