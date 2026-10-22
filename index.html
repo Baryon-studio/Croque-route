@@ -907,8 +907,8 @@ function openSheet(p){
   ${addr?`<div class="info"><span class="l">Adresse</span><span>${esc(addr)}</span></div>`:''}
   ${t.opening_hours?`<div class="info"><span class="l">Horaires</span><span>${esc(fmtHours(t.opening_hours))}</span></div>`:''}
   <div class="go3">
-    <div class="go-lbl">Google Maps</div>
-    <div class="go-row"><a class="p" href="${gm}" target="_blank" rel="noopener">Ajouter l'arrêt</a><a href="${gs}" target="_blank" rel="noopener">Voir la fiche</a></div>
+    <a class="p" href="${gm}" target="_blank" rel="noopener">Ajouter l'arrêt dans Google Maps</a>
+    <a href="${gs}" target="_blank" rel="noopener">Voir la fiche sur Google Maps</a>
     <a href="${wz}" target="_blank" rel="noopener">Lancer la navigation avec Waze</a>
     <a href="${ap}" target="_blank" rel="noopener">Lancer la navigation avec Plans</a>
   </div>`;
