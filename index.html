@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#FAFAF8" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0A0A0A" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -20,13 +20,13 @@
 <title>Croque-Route</title>
 <style>
 :root{
-  --bg:#FAFAF8;--surface:#FFFFFF;--ink:#0A0A0A;--muted:#767676;--line:rgba(10,10,10,.10);
-  --sign:#0A0A0A;--sign-line:rgba(255,255,255,.14);--glass:rgba(250,250,248,.82);
-  --serif:"Instrument Serif",Georgia,"Times New Roman",serif;
+  --bg:#FFFFFF;--surface:#F3F3F3;--ink:#000000;--muted:#6B6B6B;--line:rgba(0,0,0,.09);
+  --sign:#F3F3F3;--sign-line:rgba(0,0,0,.09);--glass:rgba(255,255,255,.88);
+  --serif:"Inter",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
 }
 @media (prefers-color-scheme:dark){:root{
-  --bg:#0A0A0A;--surface:#141414;--ink:#F5F5F3;--muted:#8C8C8C;--line:rgba(255,255,255,.12);
-  --sign:#1C1C1C;--sign-line:rgba(255,255,255,.12);--glass:rgba(10,10,10,.82);
+  --bg:#000000;--surface:#1C1C1C;--ink:#FFFFFF;--muted:#9A9A9A;--line:rgba(255,255,255,.12);
+  --sign:#1C1C1C;--sign-line:rgba(255,255,255,.12);--glass:rgba(0,0,0,.88);
 }}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;margin:0}
@@ -37,7 +37,7 @@ input{font:inherit;color:inherit}
 .view{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(env(safe-area-inset-top) + 16px) 22px calc(110px + env(safe-area-inset-bottom))}
 
 /* Logos : cercle monochrome */
-.lg{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--ink);color:var(--bg);font:400 15px/1 var(--serif);letter-spacing:.2px}
+.lg{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--ink);color:var(--bg);font:700 14px/1 var(--serif);letter-spacing:0}
 .lg svg{width:18px;height:18px;fill:currentColor}
 .lg.im{background:#fff;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(10,10,10,.12)}
 .lg.im img{width:100%;height:100%;display:block}
@@ -47,9 +47,9 @@ input{font:inherit;color:inherit}
 .brand{display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:-.1px;font-size:15px}
 .logo{width:32px;height:32px;border-radius:9px;background:var(--ink);display:grid;place-items:center}
 .logo svg path{stroke:var(--bg)}
-h1{font:400 50px/.98 var(--serif);letter-spacing:-.8px;margin:34px 0 12px}
+h1{font:800 42px/1.04 var(--serif);letter-spacing:-1.8px;margin:30px 0 12px}
 .sub{color:var(--muted);margin:0 0 24px;font-size:16px}
-.card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:6px 6px 6px 16px}
+.card{position:relative;background:var(--surface);border-radius:14px;padding:6px 6px 6px 16px}
 .route{display:flex;align-items:stretch;gap:12px}
 .rail-ic{display:flex;flex-direction:column;align-items:center;padding:21px 0}
 .rail-ic i{width:9px;height:9px;border-radius:50%;border:2px solid var(--ink)}
@@ -59,7 +59,7 @@ h1{font:400 50px/.98 var(--serif);letter-spacing:-.8px;margin:34px 0 12px}
 .fields input{width:100%;height:54px;border:0;outline:0;background:transparent;font-size:17px;font-weight:500}
 .fields input::placeholder{color:var(--muted);font-weight:400}
 .fields hr{border:0;border-top:1px solid var(--line);margin:0}
-.sug{position:absolute;left:-1px;right:-1px;z-index:30;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 14px 40px rgba(0,0,0,.14);overflow:hidden;display:none}
+.sug{position:absolute;left:0;right:0;z-index:30;background:var(--bg);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 40px rgba(0,0,0,.14);overflow:hidden;display:none}
 .sug.show{display:block}
 #sugFrom{top:62px}#sugTo{top:117px}
 .sug button{display:block;width:100%;text-align:left;padding:12px 16px;border-bottom:1px solid var(--line)}
@@ -67,16 +67,16 @@ h1{font:400 50px/.98 var(--serif);letter-spacing:-.8px;margin:34px 0 12px}
 .sug button:active{background:var(--bg)}
 .sug .s1{font-weight:600;font-size:15px}
 .sug .s2{color:var(--muted);font-size:13px}
-.swap{align-self:center;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;margin-right:6px}
+.swap{align-self:center;width:40px;height:40px;border-radius:50%;background:var(--bg);display:grid;place-items:center;margin-right:6px}
 h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);margin:32px 0 12px;font-weight:600}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{display:flex;align-items:center;gap:8px;padding:5px 14px 5px 5px;border-radius:999px;background:var(--surface);border:1px solid var(--line);font-size:14.5px;font-weight:500;transition:transform .15s,background .2s,color .2s}
+.chip{display:flex;align-items:center;gap:8px;padding:5px 14px 5px 5px;border-radius:999px;background:var(--surface);border:1px solid transparent;font-size:14.5px;font-weight:500;transition:transform .15s,background .2s,color .2s}
 .chip .lg{width:26px;height:26px;font-size:12px}
 .chip .lg svg{width:14px;height:14px}
 .chip:active{transform:scale(.96)}
 .chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .chip.on .lg.mono{background:var(--bg);color:var(--ink)}
-.cta{width:100%;height:56px;margin-top:16px;border-radius:16px;background:var(--ink);color:var(--bg);font-size:16px;font-weight:600;letter-spacing:.2px;transition:transform .15s}
+.cta{width:100%;height:56px;margin-top:16px;border-radius:10px;background:var(--ink);color:var(--bg);font-size:16px;font-weight:600;letter-spacing:.2px;transition:transform .15s}
 .cta:active{transform:scale(.985)}
 .err{color:#B42318;margin:14px 2px 0;font-size:14px}
 
@@ -89,14 +89,15 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
 #results{z-index:20;background:var(--bg);transform:translateX(100%);transition:transform .38s cubic-bezier(.2,.8,.2,1);padding-bottom:calc(40px + env(safe-area-inset-bottom))}
 #results.show{transform:none}
 .top{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-.back{width:40px;height:40px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;flex:none}
+.back{width:40px;height:40px;border-radius:50%;background:var(--surface);display:grid;place-items:center;flex:none}
 .top .t{font-weight:600;font-size:17px;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .top .s{color:var(--muted);font-size:14px}
-.seg{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:3px}
-.seg button{flex:1;padding:9px 0;border-radius:11px;font-size:14px;font-weight:500;color:var(--muted);transition:background .2s,color .2s}
+.seg{display:flex;background:var(--surface);border-radius:999px;padding:4px}
+.seg button{flex:1;padding:9px 0;border-radius:999px;font-size:14px;font-weight:500;color:var(--muted);transition:background .2s,color .2s}
 .seg button.on{background:var(--ink);color:var(--bg)}
-.dists{display:flex;gap:8px;margin:12px 0 4px}
-.dists button{padding:7px 14px;border-radius:999px;font-size:13px;font-weight:500;background:transparent;color:var(--muted);border:1px solid var(--line)}
+.dists{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px}
+.dists button{white-space:nowrap}
+.dists button{padding:8px 13px;border-radius:999px;font-size:13px;font-weight:500;background:var(--surface);color:var(--ink);border:1px solid transparent}
 .dists button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .count{color:var(--muted);font-size:13.5px;margin:16px 2px 12px}
 .tl{position:relative}
@@ -110,18 +111,17 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
 .endpt .lane .dot.sq{border-radius:3px;background:var(--ink)}
 .endpt span{font-weight:600}
 .endpt small{color:var(--muted);margin-left:6px;font-weight:400}
-.sign{flex:1;min-width:0;margin-bottom:12px;background:var(--sign);color:#fff;border-radius:22px;padding:16px 18px 4px;border:1px solid var(--sign-line)}
+.sign{flex:1;min-width:0;margin-bottom:12px;background:var(--sign);color:var(--ink);border-radius:16px;padding:16px 18px 4px}
 .sign-in{border:0;padding:0}
 .sign-h{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 10px}
-.sign-h b{font:400 30px/1 var(--serif);letter-spacing:-.3px}
-.sign-h span{font-size:13px;color:rgba(255,255,255,.6)}
-.sign .lg.mono{background:#fff;color:#0A0A0A}
+.sign-h b{font:700 24px/1 var(--serif);letter-spacing:-.8px}
+.sign-h span{font-size:13px;color:var(--muted)}
 .it{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:transparent;border-radius:0;padding:12px 0;margin:0;border-top:1px solid var(--sign-line);transition:opacity .15s}
 .it:active{opacity:.6}
 .it .nm{flex:1;min-width:0;font-weight:500;font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.it .ds{font-size:13px;color:rgba(255,255,255,.62);white-space:nowrap}
-.it .axe{background:#fff;color:#0A0A0A;font-size:10px;font-weight:700;letter-spacing:.9px;padding:4px 9px;border-radius:999px}
-.empty{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:22px;text-align:center;color:var(--muted)}
+.it .ds{font-size:13px;color:var(--muted);white-space:nowrap}
+.it .axe{background:var(--ink);color:var(--bg);font-size:10px;font-weight:700;letter-spacing:.9px;padding:4px 9px;border-radius:999px}
+.empty{background:var(--surface);border-radius:14px;padding:22px;text-align:center;color:var(--muted)}
 .load{text-align:center;padding:60px 20px;color:var(--muted)}
 .bar{height:3px;border-radius:2px;background:var(--line);overflow:hidden;margin:18px auto 0;max-width:220px}
 .bar i{display:block;height:100%;width:0;background:var(--ink);transition:width .3s}
@@ -129,29 +129,41 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
 @keyframes sk{to{background-position:-200% 0}}
 
 /* Récents */
-.rec{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin-bottom:10px;width:100%;text-align:left}
+.rec{display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:14px;padding:14px 16px;margin-bottom:10px;width:100%;text-align:left}
 .rec .r1{font-weight:600}
 .rec .r2{color:var(--muted);font-size:13px}
 
 /* Fiche détail */
 .ov{position:absolute;inset:0;z-index:40;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .25s}
 .ov.show{opacity:1;pointer-events:auto}
-.sheet{position:absolute;left:0;right:0;bottom:0;z-index:41;background:var(--surface);border-radius:28px 28px 0 0;padding:10px 22px calc(24px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .38s cubic-bezier(.2,.8,.2,1);box-shadow:0 -10px 40px rgba(0,0,0,.18)}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:41;background:var(--bg);border-radius:20px 20px 0 0;padding:10px 22px calc(24px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .38s cubic-bezier(.2,.8,.2,1);box-shadow:0 -10px 40px rgba(0,0,0,.18)}
 .sheet.show{transform:none}
 .grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 18px}
 .sh-h{display:flex;align-items:center;gap:14px;margin-bottom:16px}
 .sh-h .lg{width:52px;height:52px;font-size:20px}
 .sh-h .lg svg{width:26px;height:26px}
-.sh-h .n{font:400 26px/1.1 var(--serif);letter-spacing:-.2px}
+.sh-h .n{font:700 24px/1.1 var(--serif);letter-spacing:-.7px}
 .sh-h .k{color:var(--muted);font-size:14px;margin-top:2px}
 .info{display:flex;gap:10px;padding:11px 0;border-top:1px solid var(--line);font-size:15px}
 .info .l{width:84px;color:var(--muted);flex:none}
 .go3{display:flex;flex-direction:column;gap:10px;margin-top:16px}
-.go3 a{display:flex;align-items:center;justify-content:center;height:52px;border-radius:15px;font-weight:600;text-decoration:none;background:transparent;color:var(--ink);border:1px solid var(--line)}
+.go3 a{display:flex;align-items:center;justify-content:center;height:52px;border-radius:10px;font-weight:600;text-decoration:none;background:var(--surface);color:var(--ink);border:1px solid transparent}
 .go3 a.p{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .hide{display:none!important}
+.loc{position:absolute;top:12px;right:58px;width:36px;height:36px;border-radius:50%;background:var(--bg);display:grid;place-items:center;z-index:2}
+.loc.on{color:#2B7FFF}
+#from{padding-right:44px}
+#listMap{height:260px}
+.pm{background:none;border:0}
+.pm .lg{width:28px;height:28px;box-shadow:0 0 0 2px #fff,0 2px 8px rgba(0,0,0,.3)}
+.pm .lg svg{width:15px;height:15px}
+.pm .lg img{border-radius:50%}
+.z-low .pm .lg{width:12px;height:12px;font-size:0;background:var(--ink)!important;box-shadow:0 0 0 2px #fff}
+.z-low .pm .lg svg,.z-low .pm .lg img{display:none}
+.dists button#meBtn{margin-left:auto;display:flex;align-items:center;gap:6px}
+.dists button#meBtn.on{background:#2B7FFF;color:#fff}
 /* Choix de l'itinéraire */
-.map{position:relative;z-index:0;isolation:isolate;height:330px;background:var(--surface);border:1px solid var(--line);border-radius:22px;overflow:hidden;margin-bottom:14px}
+.map{position:relative;z-index:0;isolation:isolate;height:330px;background:var(--surface);border-radius:14px;overflow:hidden;margin-bottom:14px}
 .map.fb{padding:14px;height:auto}
 .map.fb svg{display:block;width:100%;height:190px}
 .map .leaflet-container{width:100%;height:100%;background:var(--surface);font:inherit}
@@ -163,10 +175,10 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
 .pin-b{background:var(--ink);border-radius:4px;border:2px solid var(--surface)}
 .r-kinds{display:flex;gap:6px;margin-top:8px}
 .r-kinds span{font-size:11.5px;font-weight:600;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 9px}
-.rt{display:block;width:100%;text-align:left;background:var(--surface);border:1.5px solid var(--line);border-radius:20px;padding:16px 18px;margin-bottom:10px;transition:border-color .15s,background .15s}
-.rt.on{border-color:var(--ink);box-shadow:inset 0 0 0 .5px var(--ink)}
+.rt{display:block;width:100%;text-align:left;background:var(--surface);border:2px solid transparent;border-radius:14px;padding:16px 18px;margin-bottom:10px;transition:border-color .15s,background .15s}
+.rt.on{border-color:var(--ink);background:var(--bg)}
 .rt .r-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
-.rt .r-dur{font:400 30px/1 var(--serif)}
+.rt .r-dur{font:700 28px/1 var(--serif);letter-spacing:-.9px}
 .rt .r-tag{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:4px 9px;border-radius:999px;background:var(--ink);color:var(--bg);white-space:nowrap}
 .rt .r-tag.soft{background:transparent;color:var(--muted);border:1px solid var(--line)}
 .rt .r-via{margin-top:8px;font-weight:600;font-size:15px}
@@ -194,6 +206,7 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
         <input id="to" type="text" placeholder="Arrivée" autocomplete="off" autocapitalize="words" enterkeyhint="go">
       </div>
       <div class="sug" id="sugFrom"></div><div class="sug" id="sugTo"></div>
+      <button class="loc" id="locBtn" type="button" aria-label="Utiliser ma position"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="3.5"/><circle cx="12" cy="12" r="8"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3"/></svg></button>
       <button class="swap" id="swap" aria-label="Inverser"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 4 3 8M7 4l4 4M17 20V4M17 20l-4-4M17 20l4-4"/></svg></button>
     </div>
     <button class="cta" id="go">Trouver mes arrêts</button>
@@ -223,6 +236,7 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
       <button class="back" id="back" aria-label="Retour"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
       <div style="min-width:0"><div class="t" id="rTitle">Trajet</div><div class="s" id="rSub"></div></div>
     </div>
+    <div class="map hide" id="listMap"></div>
     <div id="rBody"></div>
   </section>
 
@@ -336,6 +350,15 @@ function attachSuggest(key,inputId,sugId){
   });
   inp.addEventListener('blur',()=>setTimeout(()=>box.classList.remove('show'),150));
 }
+$('locBtn').onclick=()=>{
+  $('homeErr').textContent='';
+  if(!navigator.geolocation){$('homeErr').textContent='Localisation indisponible sur cet appareil.';return}
+  $('locBtn').classList.add('on');
+  navigator.geolocation.getCurrentPosition(pos=>{
+    picked.from={lat:pos.coords.latitude,lon:pos.coords.longitude,name:'Ma position',label:'Ma position',sub:''};
+    $('from').value='Ma position';$('locBtn').classList.remove('on');$('to').focus();
+  },()=>{$('locBtn').classList.remove('on');$('homeErr').textContent='Position refusée ou indisponible. Autorise la localisation dans ton navigateur.'},{enableHighAccuracy:true,timeout:15000});
+};
 attachSuggest('from','from','sugFrom');
 attachSuggest('to','to','sugTo');
 $('from').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('to').focus()}});
@@ -639,7 +662,7 @@ function pickRoute(i){
   else{const m=$('mapBox');if(m)m.innerHTML=routePreview(state.routes,i)}
 }
 function showChoice(){
-  state.step='choice';
+  state.step='choice';stopFollow();$('listMap').classList.add('hide');
   const R=state.routes;
   const fast=Math.min(...R.map(r=>r.duration)),short=Math.min(...R.map(r=>r.distance));
   $('rTitle').textContent=`${state.fq} → ${state.tq}`;
@@ -666,7 +689,7 @@ async function run(){
   $('homeErr').textContent='';
   const fq=$('from').value.trim(),tq=$('to').value.trim();
   if(!fq||!tq){$('homeErr').textContent='Renseigne un départ et une arrivée.';return}
-  state.fq=fq;state.tq=tq;state.step='loading';
+  state.fq=fq;state.tq=tq;state.step='loading';stopFollow();$('listMap').classList.add('hide');
   $('rTitle').textContent=`${fq} → ${tq}`;$('rSub').textContent='Calcul des itinéraires…';
   $('rBody').innerHTML=loadingHtml("Calcul des itinéraires…");
   $('results').classList.add('show');$('results').scrollTop=0;
@@ -685,7 +708,7 @@ async function run(){
 }
 async function search(){
   const myRun=++runId,fq=state.fq,tq=state.tq,f=state.from,t=state.to;
-  state.step='list';
+  state.step='list';stopFollow();$('listMap').classList.add('hide');
   $('rSub').textContent='Recherche en cours…';
   $('rBody').innerHTML=loadingHtml("Recherche des arrêts…");
   $('results').scrollTop=0;
@@ -737,7 +760,7 @@ loadPois();
 $('go').onclick=run;
 $('back').onclick=()=>{
   if(state.step==='list'&&state.routes&&state.routes.length){showChoice();return}
-  runId++;$('results').classList.remove('show');
+  runId++;stopFollow();$('listMap').classList.add('hide');$('results').classList.remove('show');
 };
 
 /* ---------- Résultats ---------- */
@@ -750,25 +773,72 @@ function groupItems(list){
   g.forEach(x=>x.items.sort((a,b)=>a.dist-b.dist));
   return g;
 }
+/* ---------- Carte de la liste + position en direct ---------- */
+let LMAP=null,LMK=null,LROUTE=null,LME=null;
+function updateListMap(list){
+  const box=$('listMap');
+  if(!window.L){box.classList.add('hide');return}
+  box.classList.remove('hide');
+  const dark=matchMedia('(prefers-color-scheme: dark)').matches;
+  if(!LMAP||LROUTE!==state.route){
+    if(LMAP){LMAP.remove();LMAP=null}
+    LROUTE=state.route;
+    LMAP=L.map('listMap',{zoomControl:false,scrollWheelZoom:false});
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(LMAP);
+    const ll=state.route.geometry.coordinates.map(c=>[c[1],c[0]]);
+    L.polyline(ll,{color:dark?'#FFFFFF':'#000000',weight:5,opacity:.85,lineCap:'round',lineJoin:'round'}).addTo(LMAP);
+    L.marker(ll[0],{icon:L.divIcon({className:'',html:'<div class="pin-a" style="width:16px;height:16px"></div>',iconSize:[16,16]}),interactive:false}).addTo(LMAP);
+    L.marker(ll[ll.length-1],{icon:L.divIcon({className:'',html:'<div class="pin-b" style="width:16px;height:16px"></div>',iconSize:[16,16]}),interactive:false}).addTo(LMAP);
+    LMK=L.layerGroup().addTo(LMAP);
+    const fit=()=>{LMAP.invalidateSize();LMAP.fitBounds(L.latLngBounds(ll),{padding:[30,30],animate:false});box.classList.toggle('z-low',LMAP.getZoom()<10)};
+    LMAP.on('zoomend',()=>box.classList.toggle('z-low',LMAP.getZoom()<10));
+    fit();setTimeout(fit,450);
+  }else LMAP.invalidateSize();
+  LMK.clearLayers();
+  list.slice(0,500).forEach(p=>{
+    const m=L.marker([p.lat,p.lon],{icon:L.divIcon({className:'pm',html:logo(brandOf(p.tags),p.tags),iconSize:[28,28],iconAnchor:[14,14]})});
+    m.on('click',()=>openSheet(p));LMK.addLayer(m);
+  });
+  if(LME){LMAP.removeLayer(LME);LME=null}
+  if(state.me&&state.meLL)LME=L.circleMarker(state.meLL,{radius:8,color:'#FFFFFF',weight:3,fillColor:'#2B7FFF',fillOpacity:1}).addTo(LMAP);
+}
+function stopFollow(){
+  try{if(state.watch!=null&&navigator.geolocation)navigator.geolocation.clearWatch(state.watch)}catch(e){}
+  state.watch=null;state.following=false;state.me=null;state.meLL=null;state.meMsg='';
+}
+function startFollow(){
+  if(!navigator.geolocation){state.meMsg='Localisation indisponible sur cet appareil.';render();return}
+  state.following=true;state.meMsg='';state.lastMe=0;render();
+  state.watch=navigator.geolocation.watchPosition(pos=>{
+    const la=pos.coords.latitude,lo=pos.coords.longitude,l=locate(la,lo);
+    state.meLL=[la,lo];
+    if(l.dist>3000){state.me=null;state.meMsg=l.dist<2e6?`Tu es à ${fmtDist(l.dist)} de cet itinéraire.`:'Tu es loin de cet itinéraire.'}
+    else{state.me={pos:l.pos};state.meMsg=''}
+    const now=Date.now();
+    if(!state.lastMe||now-state.lastMe>15000){state.lastMe=now;render()}
+  },()=>{state.watch=null;state.following=false;state.me=null;state.meMsg='Position refusée ou indisponible. Autorise la localisation dans ton navigateur.';render()},{enableHighAccuracy:true,maximumAge:5000,timeout:30000});
+}
 function render(){
-  const r=state.route;
-  $('rSub').textContent=`${Math.round(r.distance/1000)} km · ${fmtDur(r.duration)}`;
-  const list=state.found.filter(p=>p.dist<=state.maxDist&&(state.type==='all'||p.tags.amenity===state.type));
+  const r=state.route,me=state.me;
+  $('rSub').textContent=me?`Il te reste ${fmtDist(Math.max(0,r.distance-me.pos))} · ${fmtDur(Math.max(0,r.distance-me.pos)/r.distance*r.duration)}`:`${Math.round(r.distance/1000)} km · ${fmtDur(r.duration)}`;
+  let list=state.found.filter(p=>p.dist<=state.maxDist&&(state.type==='all'||p.tags.amenity===state.type));
+  if(me)list=list.filter(p=>p.pos>=me.pos-300);
   state.groups=groupItems(list);
   const D=[[250,"Sur l'axe"],[500,'500 m'],[1000,'1 km']];
   const T=[['all','Tout'],['fast_food','Fast-food'],['restaurant','Restos'],['cafe','Cafés']];
   let h=`<div class="seg" id="seg">${T.map(([k,l])=>`<button data-t="${k}" class="${state.type===k?'on':''}">${l}</button>`).join('')}</div>
-  <div class="dists" id="dists">${D.map(([k,l])=>`<button data-d="${k}" class="${state.maxDist===k?'on':''}">${l}</button>`).join('')}</div>
-  <div class="count">${list.length} arrêt${list.length>1?'s':''} · ${state.groups.length} sortie${state.groups.length>1?'s':''}${state.failed?` · résultats partiels (${state.failed} tronçon${state.failed>1?'s':''} sans réponse)`:''}</div>`;
-  h+=`<div class="tl"><div class="endpt"><div class="lane"><div class="dot"></div></div><span>${esc(state.from.name)}<small>km 0</small></span></div>`;
+  <div class="dists" id="dists">${D.map(([k,l])=>`<button data-d="${k}" class="${state.maxDist===k?'on':''}">${l}</button>`).join('')}<button id="meBtn" class="${state.following?'on':''}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="3.5"/><circle cx="12" cy="12" r="8"/></svg>${state.following?(me?'Position suivie':'Localisation…'):'Ma position'}</button></div>
+  <div class="count">${list.length} arrêt${list.length>1?'s':''} · ${state.groups.length} sortie${state.groups.length>1?'s':''}${state.failed?` · résultats partiels (${state.failed} tronçon${state.failed>1?'s':''} sans réponse)`:''}${state.meMsg?`<br>${esc(state.meMsg)}`:''}</div>`;
+  h+=`<div class="tl"><div class="endpt"><div class="lane"><div class="dot"></div></div><span>${me?'Ma position':esc(state.from.name)}<small>${me?'maintenant':'km 0'}</small></span></div>`;
   if(!list.length){
     h+=`<div class="empty">Rien avec ces critères. Élargis l'écart à la route ou change d'enseigne.</div>`;
   }
   state.groups.forEach((g,gi)=>{
-    const eta=fmtDur(g.start/r.distance*r.duration);
+    const gd=me?Math.max(0,g.start-me.pos):g.start;
+    const eta=fmtDur(gd/r.distance*r.duration);
     h+=`<div class="node"><div class="lane"><div class="dot"></div><div class="line"></div></div>
     <div class="sign"><div class="sign-in">
-      <div class="sign-h"><b>km ${Math.round(g.start/1000)}</b><span>dans ${eta}</span></div>
+      <div class="sign-h"><b>${me?fmtDist(gd):'km '+Math.round(g.start/1000)}</b><span>dans ${eta}</span></div>
       ${g.items.map((p,ii)=>{
         const b=brandOf(p.tags),t=p.tags;
         const name=t.name||t.brand||'Sans nom';
@@ -781,11 +851,13 @@ function render(){
   const keep=$('results').scrollTop;
   $('rBody').innerHTML=h;
   $('results').scrollTop=keep;
+  updateListMap(list);
 }
 $('rBody').addEventListener('click',e=>{
   const rt=e.target.closest('[data-r]');
   if(rt){pickRoute(+rt.dataset.r);return}
   if(e.target.closest('#goRoute')){search();return}
+  if(e.target.closest('#meBtn')){state.following?(stopFollow(),render()):startFollow();return}
   const t=e.target.closest('[data-t]');if(t){state.type=t.dataset.t;render();return}
   const d=e.target.closest('[data-d]');if(d){state.maxDist=+d.dataset.d;render();return}
   const it=e.target.closest('.it');if(it){openSheet(state.groups[+it.dataset.g].items[+it.dataset.i])}
@@ -796,7 +868,8 @@ function openSheet(p){
   const t=p.tags,b=brandOf(t);
   const name=t.name||t.brand||'Sans nom';
   const type={fast_food:'Fast-food',restaurant:'Restaurant',cafe:'Café'}[t.amenity]||'';
-  const r=state.route,km=Math.round(p.pos/1000),eta=fmtDur(p.pos/r.distance*r.duration);
+  const r=state.route,me=state.me,delta=me?Math.max(0,p.pos-me.pos):p.pos,km=Math.round(p.pos/1000),eta=fmtDur(delta/r.distance*r.duration);
+  const arr=me?new Date(Date.now()+delta/r.distance*r.duration*1000).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'';
   const axe=p.dist<250,detour=Math.max(1,Math.round(2*p.dist/833));
   const addr=t.addr||[[t['addr:housenumber'],t['addr:street']].filter(Boolean).join(' '),t['addr:city']].filter(Boolean).join(', ');
   const f=state.from,to=state.to;
@@ -808,7 +881,7 @@ function openSheet(p){
   $('sheet').innerHTML=`<div class="grab"></div>
   <div class="sh-h">${bd}<div style="min-width:0"><div class="n">${esc(name)}</div><div class="k">${esc(type)}${t.cuisine?' · '+esc(t.cuisine.split(';')[0].replace(/_/g,' ')):''}</div></div></div>
   <div class="info"><span class="l">Sur ta route</span><span>${axe?'Quasi aucun détour':`À ${fmtDist(p.dist)} de la route · détour estimé ~${detour} min`}</span></div>
-  <div class="info"><span class="l">Position</span><span>Au km ${km}, dans ${eta}</span></div>
+  <div class="info"><span class="l">Position</span><span>${me?`À ${fmtDist(delta)} devant toi, dans ${eta} (vers ${arr})`:`Au km ${km}, dans ${eta}`}</span></div>
   ${t.aire?`<div class="info"><span class="l">Lieu</span><span>Aire d'autoroute ou de service</span></div>`:''}
   ${addr?`<div class="info"><span class="l">Adresse</span><span>${esc(addr)}</span></div>`:''}
   ${t.opening_hours?`<div class="info"><span class="l">Horaires</span><span>${esc(fmtHours(t.opening_hours))}</span></div>`:''}
