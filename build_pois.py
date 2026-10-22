@@ -27,6 +27,7 @@ BRANDS = [
     ("Quick", "^Quick"), ("Courte Paille", "Courte ?Paille"), ("Buffalo Grill", "Buffalo Grill"),
     ("Flunch", "Flunch"), ("Subway", "Subway"), ("Paul", "^Paul$"),
     ("Brioche Dorée", "Brioche D"), ("Starbucks", "Starbucks"), ("O'Tacos", "O'?Tacos"),
+    ("Domino's", "Domino'?s"), ("Pizza Hut", "Pizza Hut"), ("Del Arte", "Del Arte"), ("Hippopotamus", "Hippopotamus"), ("Léon", "^L[ée]on( de Bruxelles)?$"), ("Columbus Café", "Columbus Caf"), ("Class'croute", "Class'? ?Cro[uû]te"), ("Autogrill", "Autogrill"), ("Pizza Paï", "Pizza Pa[iï]"),
 ]
 RX = "|".join(p for _, p in BRANDS)
 BRAND_RE = [re.compile(p, re.I) for _, p in BRANDS]
