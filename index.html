@@ -492,8 +492,9 @@ function locate(lat,lon){
 }
 
 /* ---------- Base locale (pois.json, construite une fois par build_pois.py) ---------- */
-let POIS=null;
+let POIS=null,PONT=[];
 async function loadPois(){
+  try{const rp=await fetch('aires_pont.json');if(rp.ok)PONT=(await rp.json()).map(x=>String(x).toLowerCase())}catch(e){}
   try{
     const r=await fetch('pois.json');
     if(!r.ok)throw new Error('absent');
@@ -514,7 +515,9 @@ function localSearch(){
     const l=locate(q[0],q[1]);
     if(l.dist>FETCH_RADIUS)continue;
     /* Sens inverse : sur autoroute, un lieu proche situé à gauche de ma trajectoire est sur l'autre côté (circulation à droite) */
-    if(l.side>25&&l.dist<=400&&(q[5]||onMotorway(l.pos)))continue;
+    const an=q[5]&&POIS.aires?POIS.aires[q[5]-1]||'':'';
+    const pont=an&&PONT.some(x=>an.toLowerCase().includes(x));
+    if(!pont&&l.side>25&&l.dist<=400&&(q[5]||onMotorway(l.pos)))continue;
     const tags={name:q[2],amenity:types[q[4]]};
     if(q[3]>=0)tags.brand=POIS.brands[q[3]];
     if(q[5]){tags.aire=1;const an=POIS.aires&&POIS.aires[q[5]-1];if(an)tags.aireName=an}
