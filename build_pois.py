@@ -1,0 +1,221 @@
+#!/usr/bin/env python3
+"""
+Croque-Route : construit la base locale pois.json (enseignes + aires d'autoroute de France)
+depuis OpenStreetMap, puis lance l'app sur ton ordinateur.
+
+Usage (dans le dossier de l'app) :
+    python3 build_pois.py              construit la base si elle n'existe pas, puis lance l'app
+    python3 build_pois.py --refresh    reconstruit la base
+    python3 build_pois.py --all        ajoute tous les fast-foods nommés (base plus grosse)
+    python3 build_pois.py --no-serve   construit la base sans lancer l'app
+
+Aucune dépendance : Python 3 seulement. La construction prend quelques minutes, une seule fois.
+"""
+import json, os, re, socket, sys, time, datetime, math
+import urllib.request, urllib.parse
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+OUT = os.path.join(HERE, "pois.json")
+ENDPOINTS = [
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter",
+    "https://overpass.private.coffee/api/interpreter",
+]
+# (libellé affiché dans l'app, motif de reconnaissance) : mêmes enseignes que l'app
+BRANDS = [
+    ("McDonald's", "McDonald"), ("Burger King", "Burger King"), ("KFC", "KFC"),
+    ("Quick", "^Quick"), ("Courte Paille", "Courte ?Paille"), ("Buffalo Grill", "Buffalo Grill"),
+    ("Flunch", "Flunch"), ("Subway", "Subway"), ("Paul", "^Paul$"),
+    ("Brioche Dorée", "Brioche D"), ("Starbucks", "Starbucks"), ("O'Tacos", "O'?Tacos"),
+]
+RX = "|".join(p for _, p in BRANDS)
+BRAND_RE = [re.compile(p, re.I) for _, p in BRANDS]
+TYPES = ["fast_food", "restaurant", "cafe"]
+
+# France métropolitaine + Corse, découpée en tuiles pour ne pas surcharger le serveur
+LAT_EDGES = [41.2, 43.2, 44.8, 46.4, 48.0, 49.3, 51.3]
+LON_EDGES = [-5.3, -1.0, 2.2, 5.5, 9.8]
+
+
+def tiles():
+    for a, b in zip(LAT_EDGES, LAT_EDGES[1:]):
+        for c, d in zip(LON_EDGES, LON_EDGES[1:]):
+            yield (a, c, b, d)
+
+
+def build_query(bb, all_fastfood):
+    s, w, n, e = bb
+    box = f"({s},{w},{n},{e})"
+    extra = f'nwr["amenity"="fast_food"]["name"]{box};' if all_fastfood else ""
+    return f"""[out:json][timeout:180];
+nwr["highway"~"^(services|rest_area)$"]{box}->.sa;
+nwr["amenity"~"^(fast_food|restaurant|cafe)$"](around.sa:120)->.ap;
+(
+  nwr["amenity"~"^(fast_food|restaurant|cafe)$"]["brand"~"{RX}",i]{box};
+  nwr["amenity"~"^(fast_food|restaurant|cafe)$"]["name"~"{RX}",i]{box};
+  .ap;
+  {extra}
+)->.u;
+.u out center tags;
+.ap out ids;
+"""
+
+
+def fetch_tile(query, label):
+    """Interroge Overpass avec nouvelles tentatives et serveurs de secours."""
+    data = urllib.parse.urlencode({"data": query}).encode()
+    for attempt in range(6):
+        for ep in ENDPOINTS:
+            try:
+                req = urllib.request.Request(ep, data=data, headers={"User-Agent": "croque-route/1.0"})
+                with urllib.request.urlopen(req, timeout=240) as r:
+                    return json.loads(r.read().decode("utf-8"))
+            except Exception as ex:
+                print(f"    {label}: {ep.split('/')[2]} a échoué ({type(ex).__name__}), je réessaie…")
+                time.sleep(3)
+        time.sleep(10 * (attempt + 1))
+    return None
+
+
+def center(el):
+    if "lat" in el:
+        return el["lat"], el["lon"]
+    c = el.get("center")
+    return (c["lat"], c["lon"]) if c else (None, None)
+
+
+def detect_brand(tags):
+    for i, rx in enumerate(BRAND_RE):
+        if (tags.get("brand") and rx.search(tags["brand"])) or (tags.get("name") and rx.search(tags["name"])):
+            return i
+    return -1
+
+
+def process(tile_results, all_fastfood):
+    """Transforme les réponses Overpass en liste compacte de lieux."""
+    pois = {}
+    for res in tile_results:
+        if not res:
+            continue
+        aire_ids = set()
+        for el in res.get("elements", []):
+            if "tags" not in el and "lat" not in el and "center" not in el:
+                aire_ids.add((el["type"], el["id"]))  # entrée « ids » : lieu situé dans une aire
+        for el in res.get("elements", []):
+            tags = el.get("tags")
+            if not tags or tags.get("amenity") not in TYPES:
+                continue
+            lat, lon = center(el)
+            if lat is None:
+                continue
+            key = (el["type"], el["id"])
+            name = tags.get("name") or tags.get("brand")
+            if not name:
+                continue
+            b = detect_brand(tags)
+            in_aire = key in aire_ids
+            if b < 0 and not in_aire and not (all_fastfood and tags.get("amenity") == "fast_food"):
+                continue
+            addr = ", ".join(x for x in [
+                " ".join(y for y in [tags.get("addr:housenumber"), tags.get("addr:street")] if y),
+                tags.get("addr:city"),
+            ] if x)
+            rec = [round(lat, 5), round(lon, 5), name, b, TYPES.index(tags["amenity"]),
+                   1 if in_aire else 0, tags.get("opening_hours", ""), addr]
+            if key in pois:  # un même lieu vu dans deux tuiles : on garde le marqueur « aire »
+                pois[key][5] = max(pois[key][5], rec[5])
+            else:
+                pois[key] = rec
+    return list(pois.values())
+
+
+def build(all_fastfood):
+    results, failed = [], 0
+    all_tiles = list(tiles())
+    for i, bb in enumerate(all_tiles, 1):
+        label = f"zone {i}/{len(all_tiles)}"
+        print(f"Téléchargement {label}…", flush=True)
+        res = fetch_tile(build_query(bb, all_fastfood), label)
+        if res is None:
+            failed += 1
+            print(f"  {label} : échec définitif")
+        else:
+            print(f"  {label} : {len(res.get('elements', []))} éléments")
+        results.append(res)
+        time.sleep(2)
+    p = process(results, all_fastfood)
+    p.sort(key=lambda r: (r[0], r[1]))
+    data = {
+        "v": 1,
+        "date": datetime.date.today().strftime("%d/%m/%Y"),
+        "complete": failed == 0,
+        "brands": [b for b, _ in BRANDS],
+        "p": p,
+    }
+    with open(OUT, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
+    size = os.path.getsize(OUT) / 1024
+    print(f"\nBase écrite : {len(p)} lieux ({size:.0f} Ko) dans pois.json")
+    if failed:
+        print(f"ATTENTION : {failed} zone(s) sans réponse. Relance avec --refresh pour compléter.")
+    return failed == 0
+
+
+def lan_ip():
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return None
+
+
+def serve():
+    import http.server, socketserver, webbrowser, functools
+    handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=HERE)
+    socketserver.ThreadingTCPServer.allow_reuse_address = True
+    for port in range(8000, 8011):
+        try:
+            httpd = socketserver.ThreadingTCPServer(("0.0.0.0", port), handler)
+            break
+        except OSError:
+            continue
+    else:
+        print("Aucun port libre entre 8000 et 8010.")
+        return
+    ip = lan_ip()
+    print(f"\nApp lancée : http://localhost:{port}")
+    if ip:
+        print(f"Sur ton téléphone (même wifi) : http://{ip}:{port}")
+    print("Ctrl+C pour arrêter.\n")
+    try:
+        webbrowser.open(f"http://localhost:{port}")
+    except Exception:
+        pass
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        print("\nArrêté.")
+
+
+def main():
+    args = set(sys.argv[1:])
+    all_ff = "--all" in args
+    need = "--refresh" in args or not os.path.exists(OUT)
+    if not need:
+        try:
+            need = not json.load(open(OUT, encoding="utf-8")).get("complete", False)
+        except Exception:
+            need = True
+    if need:
+        build(all_ff)
+    else:
+        print("pois.json existe déjà (utilise --refresh pour le reconstruire).")
+    if "--no-serve" not in args:
+        serve()
+
+
+if __name__ == "__main__":
+    main()

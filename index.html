@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F3F4F6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C0E11" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Croque-Route">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<title>Croque-Route</title>
+<style>
+:root{
+  --bg:#F3F4F6;--surface:#FFFFFF;--ink:#111418;--muted:#6B7380;--line:rgba(17,20,24,.08);
+  --accent:#FF5A1F;--accent-ink:#fff;--sign:#0B5BD3;--sign-d:#0948A8;--ok:#16A34A;
+  --shadow:0 1px 2px rgba(17,20,24,.04),0 8px 24px rgba(17,20,24,.06);
+  --glass:rgba(255,255,255,.78);
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0C0E11;--surface:#16191E;--ink:#F4F6F8;--muted:#8C95A3;--line:rgba(255,255,255,.08);
+  --sign:#1B6FE8;--sign-d:#1456B8;--shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+  --glass:rgba(22,25,30,.78);
+}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Inter",system-ui,sans-serif;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer}
+input{font:inherit;color:inherit}
+#app{position:relative;height:100%;max-width:480px;margin:0 auto;overflow:hidden;background:var(--bg)}
+.view{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(env(safe-area-inset-top) + 14px) 20px calc(110px + env(safe-area-inset-bottom))}
+
+/* Accueil */
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.2px}
+.logo{width:34px;height:34px;border-radius:11px;background:var(--accent);display:grid;place-items:center}
+h1{font-size:34px;line-height:1.05;letter-spacing:-1.2px;margin:26px 0 8px;font-weight:800}
+.sub{color:var(--muted);margin:0 0 22px;font-size:16px}
+.card{background:var(--surface);border-radius:22px;box-shadow:var(--shadow);padding:6px 6px 6px 14px}
+.route{display:flex;align-items:stretch;gap:12px}
+.rail-ic{display:flex;flex-direction:column;align-items:center;padding:20px 0}
+.rail-ic i{width:10px;height:10px;border-radius:50%;border:2.5px solid var(--ink)}
+.rail-ic u{flex:1;width:0;border-left:2px dotted var(--muted);margin:5px 0;opacity:.6}
+.rail-ic b{width:10px;height:10px;border-radius:3px;background:var(--accent)}
+.fields{flex:1;min-width:0}
+.fields input{width:100%;height:54px;border:0;outline:0;background:transparent;font-size:17px;font-weight:500}
+.fields input::placeholder{color:var(--muted);font-weight:400}
+.fields hr{border:0;border-top:1px solid var(--line);margin:0}
+.card{position:relative}
+.sug{position:absolute;left:0;right:0;z-index:30;background:var(--surface);border-radius:18px;box-shadow:0 12px 36px rgba(0,0,0,.18);overflow:hidden;display:none}
+.sug.show{display:block}
+#sugFrom{top:62px}#sugTo{top:117px}
+.sug button{display:block;width:100%;text-align:left;padding:12px 16px;border-bottom:1px solid var(--line)}
+.sug button:last-child{border-bottom:0}
+.sug button:active{background:var(--bg)}
+.sug .s1{font-weight:600;font-size:15px}
+.sug .s2{color:var(--muted);font-size:13px}
+.swap{align-self:center;width:42px;height:42px;border-radius:50%;background:var(--bg);display:grid;place-items:center;margin-right:6px}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:28px 0 12px;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;border-radius:999px;background:var(--surface);box-shadow:var(--shadow);font-size:15px;font-weight:500;transition:transform .15s,background .2s,color .2s}
+.chip:active{transform:scale(.96)}
+.chip.on{background:var(--ink);color:var(--bg)}
+.bd{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;flex:none;letter-spacing:-.3px}
+.cta{width:100%;height:58px;margin-top:16px;border-radius:18px;background:var(--accent);color:var(--accent-ink);font-size:17px;font-weight:700;box-shadow:0 10px 28px rgba(255,90,31,.38);transition:transform .15s}
+.cta:active{transform:scale(.98)}
+.err{color:#DC2626;margin:14px 2px 0;font-size:14px}
+
+/* Barre d'onglets */
+.tabs{position:fixed;left:50%;transform:translateX(-50%);width:100%;max-width:480px;bottom:0;z-index:10;display:flex;padding:8px 24px calc(10px + env(safe-area-inset-bottom));background:var(--glass);-webkit-backdrop-filter:blur(20px) saturate(1.6);backdrop-filter:blur(20px) saturate(1.6);border-top:1px solid var(--line)}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:var(--muted);padding:4px 0}
+.tab.on{color:var(--accent)}
+
+/* Résultats */
+#results{z-index:20;background:var(--bg);transform:translateX(100%);transition:transform .38s cubic-bezier(.2,.8,.2,1);padding-bottom:calc(40px + env(safe-area-inset-bottom))}
+#results.show{transform:none}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.back{width:42px;height:42px;border-radius:50%;background:var(--surface);box-shadow:var(--shadow);display:grid;place-items:center;flex:none}
+.top .t{font-weight:700;font-size:18px;letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top .s{color:var(--muted);font-size:14px}
+.seg{display:flex;background:var(--surface);border-radius:14px;padding:4px;box-shadow:var(--shadow)}
+.seg button{flex:1;padding:9px 0;border-radius:10px;font-size:14px;font-weight:600;color:var(--muted);transition:background .2s,color .2s}
+.seg button.on{background:var(--ink);color:var(--bg)}
+.dists{display:flex;gap:8px;margin:12px 0 4px}
+.dists button{padding:7px 14px;border-radius:999px;font-size:13px;font-weight:600;background:var(--surface);color:var(--muted);box-shadow:var(--shadow)}
+.dists button.on{background:var(--accent);color:#fff}
+.count{color:var(--muted);font-size:14px;margin:14px 2px 10px}
+.tl{position:relative}
+.node{display:flex;gap:12px}
+.lane{display:flex;flex-direction:column;align-items:center;width:18px;flex:none}
+.lane .dot{width:14px;height:14px;border-radius:50%;background:var(--bg);border:3.5px solid var(--sign);margin-top:18px;flex:none}
+.lane .line{flex:1;width:3px;background:var(--line);border-radius:2px}
+.node.end .lane .line{display:none}
+.endpt{display:flex;align-items:center;gap:12px;padding:6px 0 10px}
+.endpt .lane .dot{margin:0;border-color:var(--ink)}
+.endpt .lane .dot.sq{border-radius:4px;background:var(--accent);border-color:var(--accent)}
+.endpt span{font-weight:600}
+.endpt small{color:var(--muted);margin-left:6px;font-weight:400}
+.sign{flex:1;min-width:0;margin-bottom:12px;background:var(--sign);color:#fff;border-radius:20px;padding:6px;box-shadow:var(--shadow)}
+.sign-in{border:2px solid rgba(255,255,255,.85);border-radius:15px;padding:10px 10px 6px}
+.sign-h{display:flex;justify-content:space-between;align-items:baseline;margin:0 4px 8px}
+.sign-h b{font-size:20px;letter-spacing:-.4px}
+.sign-h span{font-size:13px;opacity:.85}
+.it{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:rgba(255,255,255,.12);border-radius:12px;padding:8px 10px;margin-bottom:6px;transition:background .15s}
+.it:active{background:rgba(255,255,255,.24)}
+.it .nm{flex:1;min-width:0;font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.it .ds{font-size:13px;opacity:.9;white-space:nowrap}
+.it .axe{background:#fff;color:var(--sign-d);font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px}
+.empty{background:var(--surface);border-radius:20px;padding:22px;text-align:center;color:var(--muted);box-shadow:var(--shadow)}
+.load{text-align:center;padding:60px 20px;color:var(--muted)}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin:18px auto 0;max-width:220px}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+.skel{height:120px;border-radius:20px;background:linear-gradient(90deg,var(--surface),var(--line),var(--surface));background-size:200% 100%;animation:sk 1.2s infinite;margin-bottom:12px}
+@keyframes sk{to{background-position:-200% 0}}
+
+/* Récents */
+.rec{display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:18px;padding:14px;box-shadow:var(--shadow);margin-bottom:10px;width:100%;text-align:left}
+.rec .r1{font-weight:600}
+.rec .r2{color:var(--muted);font-size:13px}
+
+/* Fiche détail */
+.ov{position:absolute;inset:0;z-index:40;background:rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .25s}
+.ov.show{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:41;background:var(--surface);border-radius:28px 28px 0 0;padding:10px 20px calc(24px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .38s cubic-bezier(.2,.8,.2,1);box-shadow:0 -10px 40px rgba(0,0,0,.2)}
+.sheet.show{transform:none}
+.grab{width:40px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 16px}
+.sh-h{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.sh-h .bd{width:48px;height:48px;font-size:16px}
+.sh-h .n{font-size:20px;font-weight:700;letter-spacing:-.3px;line-height:1.2}
+.sh-h .k{color:var(--muted);font-size:14px}
+.info{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:15px}
+.info .l{width:84px;color:var(--muted);flex:none}
+.go3{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.go3 a{display:flex;align-items:center;justify-content:center;height:52px;border-radius:16px;font-weight:700;text-decoration:none;background:var(--bg);color:var(--ink)}
+.go3 a.p{background:var(--accent);color:#fff}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ACCUEIL -->
+  <section class="view" id="home">
+    <div class="brand">
+      <div class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 3 4 21M15 3l5 18" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><path d="M12 6v3M12 12v3M12 18v3" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg></div>
+      <span>Croque-Route</span>
+    </div>
+    <h1>Où manger<br>sur ta route ?</h1>
+    <p class="sub">Tous les arrêts de ton trajet, enseigne par enseigne.</p>
+
+    <div class="card route">
+      <div class="rail-ic"><i></i><u></u><b></b></div>
+      <div class="fields">
+        <input id="from" type="text" placeholder="Départ" autocomplete="off" autocapitalize="words" enterkeyhint="next">
+        <hr>
+        <input id="to" type="text" placeholder="Arrivée" autocomplete="off" autocapitalize="words" enterkeyhint="go">
+      </div>
+      <div class="sug" id="sugFrom"></div><div class="sug" id="sugTo"></div>
+      <button class="swap" id="swap" aria-label="Inverser"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 4 3 8M7 4l4 4M17 20V4M17 20l-4-4M17 20l4-4"/></svg></button>
+    </div>
+    <button class="cta" id="go">Trouver mes arrêts</button>
+    <div class="err" id="homeErr"></div>
+
+    <h2>Filtrer par enseigne (facultatif)</h2>
+    <div class="chips" id="chips"></div>
+    <p class="sub" style="margin-top:14px;font-size:13px">Aucune sélection : tous les fast-foods et restaurants de la base.</p>
+    <p class="sub" id="dbInfo" style="font-size:12px;margin-top:-6px"></p>
+  </section>
+
+  <!-- RÉCENTS -->
+  <section class="view hide" id="recents">
+    <div class="brand"><span style="font-size:13px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.8px">Récents</span></div>
+    <h1 style="margin-top:14px">Tes derniers<br>trajets</h1>
+    <div id="recList"></div>
+  </section>
+
+  <nav class="tabs">
+    <button class="tab on" data-tab="home"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>Trajet</button>
+    <button class="tab" data-tab="recents"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Récents</button>
+  </nav>
+
+  <!-- RÉSULTATS -->
+  <section class="view" id="results">
+    <div class="top">
+      <button class="back" id="back" aria-label="Retour"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div style="min-width:0"><div class="t" id="rTitle">Trajet</div><div class="s" id="rSub"></div></div>
+    </div>
+    <div id="rBody"></div>
+  </section>
+
+  <!-- FICHE -->
+  <div class="ov" id="ov"></div>
+  <div class="sheet" id="sheet"></div>
+</div>
+
+<script>
+const BRANDS=[
+ {label:"McDonald's",rx:"McDonald",bg:"#FFC72C",fg:"#C8102E",ab:"M"},
+ {label:"Burger King",rx:"Burger King",bg:"#D62300",fg:"#fff",ab:"BK"},
+ {label:"KFC",rx:"KFC",bg:"#E4002B",fg:"#fff",ab:"K"},
+ {label:"Quick",rx:"^Quick",bg:"#E2001A",fg:"#fff",ab:"Q"},
+ {label:"Courte Paille",rx:"Courte ?Paille",bg:"#B71C1C",fg:"#fff",ab:"CP"},
+ {label:"Buffalo Grill",rx:"Buffalo Grill",bg:"#7A1E1E",fg:"#fff",ab:"BG"},
+ {label:"Flunch",rx:"Flunch",bg:"#E30613",fg:"#fff",ab:"F"},
+ {label:"Subway",rx:"Subway",bg:"#009743",fg:"#FFC600",ab:"S"},
+ {label:"Paul",rx:"^Paul$",bg:"#2B2B2B",fg:"#fff",ab:"P"},
+ {label:"Brioche Dorée",rx:"Brioche D",bg:"#8C6A3F",fg:"#fff",ab:"BD"},
+ {label:"Starbucks",rx:"Starbucks",bg:"#00704A",fg:"#fff",ab:"S"},
+ {label:"O'Tacos",rx:"O'?Tacos",bg:"#FF6A13",fg:"#fff",ab:"OT"}
+];
+const FETCH_RADIUS=1000;
+const EPS=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.private.coffee/api/interpreter'];
+let runId=0;
+const state={selected:new Set(),route:null,from:null,to:null,found:[],type:'all',maxDist:1000,groups:[]};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------- Stockage ---------- */
+function loadRecents(){try{return JSON.parse(localStorage.getItem('cr_recents')||'[]')}catch(e){return[]}}
+function saveRecent(from,to,brands,fp,tp){
+  try{
+    let r=loadRecents().filter(x=>!(x.from===from&&x.to===to));
+    r.unshift({from,to,brands,fp,tp,ts:Date.now()});
+    localStorage.setItem('cr_recents',JSON.stringify(r.slice(0,8)));
+  }catch(e){}
+}
+
+/* ---------- Badges ---------- */
+function brandOf(tags){
+  for(const b of BRANDS){
+    const re=new RegExp(b.rx,'i');
+    if((tags.brand&&re.test(tags.brand))||(tags.name&&re.test(tags.name)))return b;
+  }
+  return null;
+}
+function badge(b,tags){
+  if(b)return `<span class="bd" style="background:${b.bg};color:${b.fg}">${esc(b.ab)}</span>`;
+  const n=(tags.name||tags.brand||'?').trim();
+  return `<span class="bd" style="background:rgba(255,255,255,.22);color:inherit">${esc(n.charAt(0).toUpperCase())}</span>`;
+}
+
+/* ---------- Accueil ---------- */
+BRANDS.forEach(b=>{
+  const c=document.createElement('button');
+  c.className='chip';
+  c.innerHTML=`<span class="bd" style="background:${b.bg};color:${b.fg}">${esc(b.ab)}</span>${esc(b.label)}`;
+  c.onclick=()=>{state.selected.has(b.label)?state.selected.delete(b.label):state.selected.add(b.label);c.classList.toggle('on')};
+  c.dataset.label=b.label;
+  $('chips').appendChild(c);
+});
+const picked={from:null,to:null};
+$('swap').onclick=()=>{
+  const a=$('from').value;$('from').value=$('to').value;$('to').value=a;
+  [picked.from,picked.to]=[picked.to,picked.from];
+  hideSug();
+};
+
+/* ---------- Suggestions d'adresses (API Adresse, base officielle française) ---------- */
+function toPlace(f){
+  const p=f.properties;
+  return {
+    lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0],
+    name:p.type==='municipality'?p.name:p.label,
+    label:p.type==='municipality'?`${p.name} (${(p.context||'').split(',')[0].trim()})`:p.label,
+    sub:p.context||''
+  };
+}
+async function adresse(q,limit){
+  const r=await fetch('https://api-adresse.data.gouv.fr/search/?limit='+limit+'&autocomplete=1&q='+encodeURIComponent(q));
+  const j=await r.json();
+  return (j.features||[]).map(toPlace);
+}
+function hideSug(){$('sugFrom').classList.remove('show');$('sugTo').classList.remove('show')}
+function attachSuggest(key,inputId,sugId){
+  const inp=$(inputId),box=$(sugId);let timer=null,seq=0,items=[];
+  inp.addEventListener('input',()=>{
+    picked[key]=null;clearTimeout(timer);
+    const q=inp.value.trim();
+    if(q.length<3){box.classList.remove('show');return}
+    timer=setTimeout(async()=>{
+      const my=++seq;
+      try{
+        items=await adresse(q,5);
+        if(my!==seq)return;
+        box.innerHTML=items.map((p,i)=>`<button data-i="${i}"><div class="s1">${esc(p.name)}</div><div class="s2">${esc(p.sub)}</div></button>`).join('');
+        box.classList.toggle('show',items.length>0);
+      }catch(e){box.classList.remove('show')}
+    },220);
+  });
+  box.addEventListener('pointerdown',e=>{
+    const b=e.target.closest('button');if(!b)return;
+    e.preventDefault();
+    const p=items[+b.dataset.i];
+    picked[key]=p;inp.value=p.label;box.classList.remove('show');
+    if(key==='from')$('to').focus();else inp.blur();
+  });
+  inp.addEventListener('blur',()=>setTimeout(()=>box.classList.remove('show'),150));
+}
+attachSuggest('from','from','sugFrom');
+attachSuggest('to','to','sugTo');
+$('from').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('to').focus()}});
+$('to').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('to').blur();run()}});
+
+/* ---------- Onglets ---------- */
+function openTab(t){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.dataset.tab===t));
+  $('home').classList.toggle('hide',t!=='home');
+  $('recents').classList.toggle('hide',t!=='recents');
+  if(t==='recents')renderRecents();
+}
+document.querySelectorAll('.tab').forEach(x=>x.onclick=()=>openTab(x.dataset.tab));
+
+function renderRecents(){
+  const r=loadRecents();
+  $('recList').innerHTML=r.length?r.map((x,i)=>`<button class="rec" data-i="${i}">
+    <div style="flex:1;min-width:0"><div class="r1">${esc(x.from)} → ${esc(x.to)}</div><div class="r2">${x.brands.length?esc(x.brands.join(', ')):'Toutes les enseignes'}</div></div>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>`).join('')
+    :'<div class="empty">Tes trajets apparaîtront ici.</div>';
+}
+$('recList').addEventListener('click',e=>{
+  const b=e.target.closest('.rec');if(!b)return;
+  const x=loadRecents()[+b.dataset.i];if(!x)return;
+  $('from').value=x.from;$('to').value=x.to;
+  picked.from=x.fp||null;picked.to=x.tp||null;
+  state.selected=new Set(x.brands);
+  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',state.selected.has(c.dataset.label)));
+  openTab('home');run();
+});
+
+/* ---------- Données ---------- */
+async function geocode(q,key){
+  if(picked[key])return picked[key];
+  try{const a=await adresse(q,1);if(a.length)return a[0]}catch(e){}
+  const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=fr&q='+encodeURIComponent(q));
+  const j=await r.json();
+  if(!j.length)throw new Error('Lieu introuvable : '+q);
+  return {lat:+j[0].lat,lon:+j[0].lon,name:j[0].display_name.split(',')[0]};
+}
+async function getRoute(a,b){
+  const r=await fetch(`https://router.project-osrm.org/route/v1/driving/${a.lon},${a.lat};${b.lon},${b.lat}?overview=full&geometries=geojson`);
+  const j=await r.json();
+  if(!j.routes||!j.routes[0])throw new Error('Itinéraire introuvable');
+  return j.routes[0];
+}
+function hav(a,b){
+  const R=6371000,t=Math.PI/180,dLat=(b[1]-a[1])*t,dLon=(b[0]-a[0])*t;
+  const x=Math.sin(dLat/2)**2+Math.cos(a[1]*t)*Math.cos(b[1]*t)*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(x));
+}
+let C=[],CUM=[];
+const CELL=0.02;let GRID=new Map();
+function prepare(g){
+  C=g;CUM=[0];
+  for(let i=1;i<C.length;i++)CUM.push(CUM[i-1]+hav(C[i-1],C[i]));
+  GRID=new Map();
+  for(let i=0;i<C.length-1;i++){
+    const a=C[i],b=C[i+1];
+    const n=Math.max(1,Math.ceil(Math.max(Math.abs(b[0]-a[0]),Math.abs(b[1]-a[1]))/(CELL/2)));
+    let last='';
+    for(let k=0;k<=n;k++){
+      const x=a[0]+(b[0]-a[0])*k/n,y=a[1]+(b[1]-a[1])*k/n;
+      const key=Math.floor(x/CELL)+','+Math.floor(y/CELL);
+      if(key===last)continue;last=key;
+      let l=GRID.get(key);if(!l){l=[];GRID.set(key,l)}
+      if(l[l.length-1]!==i)l.push(i);
+    }
+  }
+}
+function sample(step){
+  const p=[C[0]];let n=step;
+  for(let i=1;i<C.length;i++){if(CUM[i]>=n){p.push(C[i]);n+=step}}
+  p.push(C[C.length-1]);return p;
+}
+async function overpass(q,start){
+  for(let k=0;k<EPS.length*2;k++){
+    const ep=EPS[(start+k)%EPS.length];
+    const ctl=new AbortController();
+    const timer=setTimeout(()=>ctl.abort(),30000);
+    try{
+      const r=await fetch(ep,{method:'POST',signal:ctl.signal,headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'data='+encodeURIComponent(q)});
+      clearTimeout(timer);
+      if(!r.ok)continue;
+      return await r.json();
+    }catch(e){clearTimeout(timer)}
+  }
+  return null;
+}
+function buildQuery(pts,rx){
+  const line=pts.map(p=>p[1].toFixed(5)+','+p[0].toFixed(5)).join(',');
+  const base='["amenity"~"^(fast_food|restaurant|cafe)$"]';
+  const ar=`(around:${FETCH_RADIUS},${line})`;
+  const body=rx?`nwr${base}["brand"~"${rx}",i]${ar};nwr${base}["name"~"${rx}",i]${ar};`:`nwr${base}["name"]${ar};`;
+  return `[out:json][timeout:25];(${body});out center tags;`;
+}
+function locate(lat,lon){
+  const kx=111320*Math.cos(lat*Math.PI/180),ky=110540;
+  const cx=Math.floor(lon/CELL),cy=Math.floor(lat/CELL);
+  let best=1e12,pos=0;
+  for(let ox=-1;ox<=1;ox++)for(let oy=-1;oy<=1;oy++){
+    const l=GRID.get((cx+ox)+','+(cy+oy));if(!l)continue;
+    for(const i of l){
+      const ax=(C[i][0]-lon)*kx,ay=(C[i][1]-lat)*ky;
+      const bx=(C[i+1][0]-lon)*kx,by=(C[i+1][1]-lat)*ky;
+      const dx=bx-ax,dy=by-ay,l2=dx*dx+dy*dy;
+      let t=l2?-(ax*dx+ay*dy)/l2:0;t=Math.max(0,Math.min(1,t));
+      const d=Math.hypot(ax+t*dx,ay+t*dy);
+      if(d<best){best=d;pos=CUM[i]+t*(CUM[i+1]-CUM[i])}
+    }
+  }
+  return {dist:best,pos};
+}
+
+/* ---------- Base locale (pois.json, construite une fois par build_pois.py) ---------- */
+let POIS=null;
+async function loadPois(){
+  try{
+    const r=await fetch('pois.json');
+    if(!r.ok)throw new Error('absent');
+    POIS=await r.json();
+    $('dbInfo').textContent=`Base chargée : ${POIS.p.length.toLocaleString('fr-FR')} lieux${POIS.date?' · mise à jour '+POIS.date:''}`;
+  }catch(e){
+    POIS=null;
+    $('dbInfo').textContent='Base locale absente : la recherche passera par internet et sera lente.';
+  }
+}
+function localSearch(){
+  const sel=state.selected.size?new Set([...state.selected].map(l=>POIS.brands.indexOf(l)).filter(i=>i>=0)):null;
+  const types=['fast_food','restaurant','cafe'];
+  const out=[];
+  for(let k=0;k<POIS.p.length;k++){
+    const q=POIS.p[k];
+    if(sel&&!sel.has(q[3]))continue;
+    const l=locate(q[0],q[1]);
+    if(l.dist>FETCH_RADIUS)continue;
+    const tags={name:q[2],amenity:types[q[4]]};
+    if(q[3]>=0)tags.brand=POIS.brands[q[3]];
+    if(q[5])tags.aire=1;
+    if(q[6])tags.opening_hours=q[6];
+    if(q[7])tags.addr=q[7];
+    out.push({id:'l'+k,lat:q[0],lon:q[1],tags,dist:l.dist,pos:l.pos});
+  }
+  return out.sort((a,b)=>a.pos-b.pos);
+}
+
+/* ---------- Format ---------- */
+function fmtDur(s){const m=Math.round(s/60);return m<60?m+' min':Math.floor(m/60)+' h '+String(m%60).padStart(2,'0')}
+function fmtDist(m){return m>=1000?(m/1000).toFixed(1).replace('.',',')+' km':(Math.max(10,Math.round(m/10)*10))+' m'}
+function fmtHours(h){
+  const d={Mo:'Lun',Tu:'Mar',We:'Mer',Th:'Jeu',Fr:'Ven',Sa:'Sam',Su:'Dim',PH:'Fériés',off:'fermé'};
+  return h.replace(/\b(Mo|Tu|We|Th|Fr|Sa|Su|PH|off)\b/g,m=>d[m]);
+}
+
+/* ---------- Lancement ---------- */
+async function run(){
+  const myRun=++runId;
+  $('homeErr').textContent='';
+  const fq=$('from').value.trim(),tq=$('to').value.trim();
+  if(!fq||!tq){$('homeErr').textContent='Renseigne un départ et une arrivée.';return}
+  $('rTitle').textContent=`${fq} → ${tq}`;$('rSub').textContent='Recherche en cours…';
+  $('rBody').innerHTML=`<div class="load"><div style="font-weight:600;color:var(--ink)" id="lt">Calcul de l'itinéraire…</div><div class="bar"><i id="lb"></i></div></div><div class="skel"></div><div class="skel"></div>`;
+  $('results').classList.add('show');$('results').scrollTop=0;
+  try{
+    const [f,t]=await Promise.all([geocode(fq,'from'),geocode(tq,'to')]);
+    state.from=f;state.to=t;
+    state.route=await getRoute(f,t);
+    if(myRun!==runId)return;
+    prepare(state.route.geometry.coordinates);
+    const labels=[...state.selected];
+    if(POIS){
+      state.found=localSearch();state.failed=0;
+      saveRecent(fq,tq,labels,f,t);
+      render();return;
+    }
+    const rx=labels.length?BRANDS.filter(b=>state.selected.has(b.label)).map(b=>b.rx).join('|'):null;
+    const pts=sample(3000),CH=12,chunks=[];
+    for(let i=0;i<pts.length-1;i+=CH-1)chunks.push(pts.slice(i,i+CH));
+    const seen=new Map();let done=0,failed=0,next=0;
+    $('lt').textContent=`Recherche des arrêts… 0/${chunks.length}`;
+    const worker=async()=>{
+      while(next<chunks.length){
+        const i=next++;
+        const j=await overpass(buildQuery(chunks[i],rx),i);
+        if(myRun!==runId)return;
+        done++;
+        if(!j){failed++}else for(const e of j.elements){
+          const id=e.type+e.id;if(seen.has(id))continue;
+          const lat=e.lat??e.center?.lat,lon=e.lon??e.center?.lon;
+          if(lat==null)continue;
+          seen.set(id,{id,lat,lon,tags:e.tags||{}});
+        }
+        $('lt').textContent=`Recherche des arrêts… ${done}/${chunks.length}`;
+        $('lb').style.width=Math.round(done/chunks.length*100)+'%';
+      }
+    };
+    await Promise.all([worker(),worker()]);
+    if(myRun!==runId)return;
+    if(failed===chunks.length)throw new Error('Le serveur de données ne répond pas. Réessaie dans une minute.');
+    state.failed=failed;
+    state.found=[...seen.values()].map(p=>{const l=locate(p.lat,p.lon);return {...p,dist:l.dist,pos:l.pos}})
+      .filter(p=>p.dist<=FETCH_RADIUS).sort((a,b)=>a.pos-b.pos);
+    saveRecent(fq,tq,labels,f,t);
+    render();
+  }catch(e){
+    $('rSub').textContent='';
+    $('rBody').innerHTML=`<div class="empty">${esc(e.message||'Erreur')}<br><br><button class="cta" style="height:48px" id="retry">Réessayer</button></div>`;
+    $('retry').onclick=run;
+  }
+}
+loadPois();
+$('go').onclick=run;
+$('back').onclick=()=>$('results').classList.remove('show');
+
+/* ---------- Résultats ---------- */
+function groupItems(list){
+  const g=[];let cur=null;
+  for(const p of list){
+    if(!cur||p.pos-cur.last>2500){cur={start:p.pos,last:p.pos,items:[]};g.push(cur)}
+    cur.items.push(p);cur.last=p.pos;
+  }
+  g.forEach(x=>x.items.sort((a,b)=>a.dist-b.dist));
+  return g;
+}
+function render(){
+  const r=state.route;
+  $('rSub').textContent=`${Math.round(r.distance/1000)} km · ${fmtDur(r.duration)}`;
+  const list=state.found.filter(p=>p.dist<=state.maxDist&&(state.type==='all'||p.tags.amenity===state.type));
+  state.groups=groupItems(list);
+  const D=[[250,"Sur l'axe"],[500,'500 m'],[1000,'1 km']];
+  const T=[['all','Tout'],['fast_food','Fast-food'],['restaurant','Restos'],['cafe','Cafés']];
+  let h=`<div class="seg" id="seg">${T.map(([k,l])=>`<button data-t="${k}" class="${state.type===k?'on':''}">${l}</button>`).join('')}</div>
+  <div class="dists" id="dists">${D.map(([k,l])=>`<button data-d="${k}" class="${state.maxDist===k?'on':''}">${l}</button>`).join('')}</div>
+  <div class="count">${list.length} arrêt${list.length>1?'s':''} · ${state.groups.length} sortie${state.groups.length>1?'s':''}${state.failed?` · résultats partiels (${state.failed} tronçon${state.failed>1?'s':''} sans réponse)`:''}</div>`;
+  h+=`<div class="tl"><div class="endpt"><div class="lane"><div class="dot"></div></div><span>${esc(state.from.name)}<small>km 0</small></span></div>`;
+  if(!list.length){
+    h+=`<div class="empty">Rien avec ces critères. Élargis l'écart à la route ou change d'enseigne.</div>`;
+  }
+  state.groups.forEach((g,gi)=>{
+    const eta=fmtDur(g.start/r.distance*r.duration);
+    h+=`<div class="node"><div class="lane"><div class="dot"></div><div class="line"></div></div>
+    <div class="sign"><div class="sign-in">
+      <div class="sign-h"><b>km ${Math.round(g.start/1000)}</b><span>dans ${eta}</span></div>
+      ${g.items.map((p,ii)=>{
+        const b=brandOf(p.tags),t=p.tags;
+        const name=t.name||t.brand||'Sans nom';
+        const axe=p.dist<250;
+        return `<button class="it" data-g="${gi}" data-i="${ii}">${badge(b,t)}<span class="nm">${esc(name)}</span>${axe?'<span class="axe">SUR L\'AXE</span>':`<span class="ds">${fmtDist(p.dist)}</span>`}</button>`;
+      }).join('')}
+    </div></div></div>`;
+  });
+  h+=`<div class="endpt"><div class="lane"><div class="dot sq"></div></div><span>${esc(state.to.name)}<small>km ${Math.round(r.distance/1000)}</small></span></div></div>`;
+  const keep=$('results').scrollTop;
+  $('rBody').innerHTML=h;
+  $('results').scrollTop=keep;
+}
+$('rBody').addEventListener('click',e=>{
+  const t=e.target.closest('[data-t]');if(t){state.type=t.dataset.t;render();return}
+  const d=e.target.closest('[data-d]');if(d){state.maxDist=+d.dataset.d;render();return}
+  const it=e.target.closest('.it');if(it){openSheet(state.groups[+it.dataset.g].items[+it.dataset.i])}
+});
+
+/* ---------- Fiche ---------- */
+function openSheet(p){
+  const t=p.tags,b=brandOf(t);
+  const name=t.name||t.brand||'Sans nom';
+  const type={fast_food:'Fast-food',restaurant:'Restaurant',cafe:'Café'}[t.amenity]||'';
+  const r=state.route,km=Math.round(p.pos/1000),eta=fmtDur(p.pos/r.distance*r.duration);
+  const axe=p.dist<250,detour=Math.max(1,Math.round(2*p.dist/833));
+  const addr=t.addr||[[t['addr:housenumber'],t['addr:street']].filter(Boolean).join(' '),t['addr:city']].filter(Boolean).join(', ');
+  const f=state.from,to=state.to;
+  const gm=`https://www.google.com/maps/dir/?api=1&origin=${f.lat},${f.lon}&destination=${to.lat},${to.lon}&waypoints=${p.lat},${p.lon}&travelmode=driving`;
+  const wz=`https://waze.com/ul?ll=${p.lat},${p.lon}&navigate=yes`;
+  const ap=`https://maps.apple.com/?daddr=${p.lat},${p.lon}&dirflg=d`;
+  const bd=b?`<span class="bd" style="background:${b.bg};color:${b.fg}">${esc(b.ab)}</span>`:`<span class="bd" style="background:var(--bg);color:var(--ink)">${esc(name.charAt(0).toUpperCase())}</span>`;
+  $('sheet').innerHTML=`<div class="grab"></div>
+  <div class="sh-h">${bd}<div style="min-width:0"><div class="n">${esc(name)}</div><div class="k">${esc(type)}${t.cuisine?' · '+esc(t.cuisine.split(';')[0].replace(/_/g,' ')):''}</div></div></div>
+  <div class="info"><span class="l">Sur ta route</span><span>${axe?'Quasi aucun détour':`À ${fmtDist(p.dist)} de la route · détour estimé ~${detour} min`}</span></div>
+  <div class="info"><span class="l">Position</span><span>Au km ${km}, dans ${eta}</span></div>
+  ${t.aire?`<div class="info"><span class="l">Lieu</span><span>Aire d'autoroute ou de service</span></div>`:''}
+  ${addr?`<div class="info"><span class="l">Adresse</span><span>${esc(addr)}</span></div>`:''}
+  ${t.opening_hours?`<div class="info"><span class="l">Horaires</span><span>${esc(fmtHours(t.opening_hours))}</span></div>`:''}
+  <div class="go3"><a class="p" href="${gm}" target="_blank" rel="noopener">Ajouter l'arrêt dans Google Maps</a><a href="${wz}" target="_blank" rel="noopener">Y aller avec Waze</a><a href="${ap}" target="_blank" rel="noopener">Y aller avec Plans</a></div>`;
+  $('ov').classList.add('show');$('sheet').classList.add('show');
+}
+function closeSheet(){$('ov').classList.remove('show');$('sheet').classList.remove('show')}
+$('ov').onclick=closeSheet;
+
+/* ---------- PWA ---------- */
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
