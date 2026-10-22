@@ -11,14 +11,23 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Télécharger les données OpenStreetMap
-        run: python3 -u build_pois.py --refresh --no-serve
+      - name: Installer l'outil osmium
+        run: sudo apt-get update && sudo apt-get install -y osmium-tool
+      - name: Télécharger la France entière (Geofabrik)
+        run: curl -fL --retry 3 -o france.osm.pbf https://download.geofabrik.de/europe/france-latest.osm.pbf && ls -lh france.osm.pbf
+      - name: Extraire les restaurants et les aires
+        run: |
+          osmium tags-filter france.osm.pbf nwr/amenity=fast_food,restaurant,cafe nwr/highway=services,rest_area -o filtered.osm.pbf --overwrite
+          osmium export filtered.osm.pbf -f geojsonseq --add-unique-id=type_id -o filtered.geojsonseq --overwrite
+          ls -lh filtered.osm.pbf filtered.geojsonseq
+      - name: Construire pois.json
+        run: python3 -u build_pois.py --from-geojson filtered.geojsonseq
       - name: Enregistrer pois.json
         run: |
           git config user.name "croque-route-bot"

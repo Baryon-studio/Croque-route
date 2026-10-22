@@ -134,6 +134,92 @@ def process(tile_results, all_fastfood):
     return list(pois.values())
 
 
+def flat_coords(g):
+    """Liste à plat des points [lon, lat] d'une géométrie GeoJSON."""
+    out = []
+    def walk(c):
+        if c and isinstance(c[0], (int, float)):
+            out.append(c)
+        else:
+            for x in c or []:
+                walk(x)
+    if g:
+        walk(g.get("coordinates"))
+    return out
+
+
+def process_geojson(path, all_fastfood):
+    """Version « fichier » : lit l'export osmium (geojsonseq) de la France entière filtrée sur les restaurants."""
+    aires, cand = [], []
+    with open(path, encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip().lstrip("\x1e")
+            if not line:
+                continue
+            try:
+                f = json.loads(line)
+            except ValueError:
+                continue
+            tags = f.get("properties") or {}
+            pts = flat_coords(f.get("geometry"))
+            if not pts:
+                continue
+            lons = [p[0] for p in pts]
+            lats = [p[1] for p in pts]
+            box = (min(lats), min(lons), max(lats), max(lons))
+            if tags.get("highway") in ("services", "rest_area"):
+                aires.append(box)
+            elif tags.get("amenity") in TYPES:
+                cand.append((f.get("id"), tags, (box[0] + box[2]) / 2, (box[1] + box[3]) / 2))
+    # Index des aires : emprise élargie d'environ 120 m, rangée par cases de 0,02 degré
+    CELL = 0.02
+    grid = {}
+    for (s, w, n, e) in aires:
+        s, n, w, e = s - 0.0011, n + 0.0011, w - 0.0016, e + 0.0016
+        for cx in range(int(w // CELL), int(e // CELL) + 1):
+            for cy in range(int(s // CELL), int(n // CELL) + 1):
+                grid.setdefault((cx, cy), []).append((s, w, n, e))
+
+    def in_aire(lat, lon):
+        for (s, w, n, e) in grid.get((int(lon // CELL), int(lat // CELL)), []):
+            if s <= lat <= n and w <= lon <= e:
+                return True
+        return False
+
+    pois = {}
+    for fid, tags, lat, lon in cand:
+        name = tags.get("name") or tags.get("brand")
+        if not name:
+            continue
+        b = detect_brand(tags)
+        aire = in_aire(lat, lon)
+        if b < 0 and not aire and not (all_fastfood and tags.get("amenity") == "fast_food"):
+            continue
+        addr = ", ".join(x for x in [
+            " ".join(y for y in [tags.get("addr:housenumber"), tags.get("addr:street")] if y),
+            tags.get("addr:city"),
+        ] if x)
+        key = fid or (round(lat, 5), round(lon, 5), name)
+        pois[key] = [round(lat, 5), round(lon, 5), name, b, TYPES.index(tags["amenity"]),
+                     1 if aire else 0, tags.get("opening_hours", ""), addr]
+    print(f"{len(aires)} aires et {len(cand)} restaurants lus, {len(pois)} lieux retenus", flush=True)
+    return list(pois.values())
+
+
+def write_db(p, complete=True):
+    p.sort(key=lambda r: (r[0], r[1]))
+    data = {
+        "v": 1,
+        "date": datetime.date.today().strftime("%d/%m/%Y"),
+        "complete": complete,
+        "brands": [b for b, _ in BRANDS],
+        "p": p,
+    }
+    with open(OUT, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
+    print(f"Base écrite : {len(p)} lieux ({os.path.getsize(OUT) / 1024:.0f} Ko) dans pois.json", flush=True)
+
+
 def build(all_fastfood):
     results, failed = [], 0
     all_tiles = list(tiles())
@@ -214,6 +300,10 @@ def serve():
 def main():
     args = set(sys.argv[1:])
     all_ff = "--all" in args
+    if "--from-geojson" in sys.argv:
+        path = sys.argv[sys.argv.index("--from-geojson") + 1]
+        write_db(process_geojson(path, all_ff))
+        return
     need = "--refresh" in args or not os.path.exists(OUT)
     if not need:
         try:
