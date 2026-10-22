@@ -435,6 +435,18 @@ function prepare(g){
     }
   }
 }
+let MWAY=[];
+function motorwayIntervals(rt){
+  const iv=[];let acc=0,tot=0;
+  for(const l of rt.legs||[])for(const st of l.steps||[])tot+=st.distance;
+  const k=tot?CUM[CUM.length-1]/tot:1;
+  for(const l of rt.legs||[])for(const st of l.steps||[]){
+    const a=acc;acc+=st.distance;
+    if(/^A\s?\d/i.test((st.ref||'').split(';')[0].trim()))iv.push([a*k-200,acc*k+200]);
+  }
+  return iv;
+}
+function onMotorway(pos){for(const [a,b] of MWAY)if(pos>=a&&pos<=b)return true;return false}
 function sample(step){
   const p=[C[0]];let n=step;
   for(let i=1;i<C.length;i++){if(CUM[i]>=n){p.push(C[i]);n+=step}}
@@ -464,7 +476,7 @@ function buildQuery(pts,rx){
 function locate(lat,lon){
   const kx=111320*Math.cos(lat*Math.PI/180),ky=110540;
   const cx=Math.floor(lon/CELL),cy=Math.floor(lat/CELL);
-  let best=1e12,pos=0;
+  let best=1e12,pos=0,side=0;
   for(let ox=-1;ox<=1;ox++)for(let oy=-1;oy<=1;oy++){
     const l=GRID.get((cx+ox)+','+(cy+oy));if(!l)continue;
     for(const i of l){
@@ -473,10 +485,10 @@ function locate(lat,lon){
       const dx=bx-ax,dy=by-ay,l2=dx*dx+dy*dy;
       let t=l2?-(ax*dx+ay*dy)/l2:0;t=Math.max(0,Math.min(1,t));
       const d=Math.hypot(ax+t*dx,ay+t*dy);
-      if(d<best){best=d;pos=CUM[i]+t*(CUM[i+1]-CUM[i])}
+      if(d<best){best=d;pos=CUM[i]+t*(CUM[i+1]-CUM[i]);side=l2?(dy*ax-dx*ay)/Math.sqrt(l2):0}
     }
   }
-  return {dist:best,pos};
+  return {dist:best,pos,side};
 }
 
 /* ---------- Base locale (pois.json, construite une fois par build_pois.py) ---------- */
@@ -501,6 +513,8 @@ function localSearch(){
     if(sel&&!sel.has(q[3]))continue;
     const l=locate(q[0],q[1]);
     if(l.dist>FETCH_RADIUS)continue;
+    /* Sens inverse : sur autoroute, un lieu proche situé à gauche de ma trajectoire est sur l'autre côté (circulation à droite) */
+    if(l.side>25&&l.dist<=400&&(q[5]||onMotorway(l.pos)))continue;
     const tags={name:q[2],amenity:types[q[4]]};
     if(q[3]>=0)tags.brand=POIS.brands[q[3]];
     if(q[5]){tags.aire=1;const an=POIS.aires&&POIS.aires[q[5]-1];if(an)tags.aireName=an}
@@ -721,6 +735,7 @@ async function search(){
   try{
     state.route=state.routes[state.sel];
     prepare(state.route.geometry.coordinates);
+    MWAY=motorwayIntervals(state.route);
     const labels=[...state.selected];
     if(POIS){
       state.found=localSearch();state.failed=0;
