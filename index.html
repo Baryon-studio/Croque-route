@@ -156,6 +156,8 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
 .map.fb svg{display:block;width:100%;height:190px}
 .map .leaflet-container{width:100%;height:100%;background:var(--surface);font:inherit}
 .map .leaflet-control-attribution{font-size:9.5px;background:var(--glass);color:var(--muted)}
+.map .leaflet-tile-pane{filter:grayscale(1) contrast(.9) brightness(1.06)}
+@media (prefers-color-scheme:dark){.map .leaflet-tile-pane{filter:grayscale(1) invert(1) contrast(.85) brightness(.9)}}
 .rlab span{display:inline-block;transform:translate(-50%,-50%);background:var(--surface);color:var(--ink);border:1.5px solid var(--ink);border-radius:999px;padding:4px 10px;font:700 12.5px/1 "Inter",system-ui,sans-serif;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.18)}
 .rlab.on span{background:var(--ink);color:var(--bg)}
 .pin-a,.pin-b{border-radius:50%;box-sizing:border-box}
@@ -512,17 +514,59 @@ async function fetchRoutes(a,b,extra){
   const j=await r.json();
   return j.routes||[];
 }
+function decode6(str){
+  let i=0,lat=0,lon=0;const out=[];
+  while(i<str.length){
+    let b,sh=0,r=0;do{b=str.charCodeAt(i++)-63;r|=(b&31)<<sh;sh+=5}while(b>=32);lat+=(r&1)?~(r>>1):(r>>1);
+    sh=0;r=0;do{b=str.charCodeAt(i++)-63;r|=(b&31)<<sh;sh+=5}while(b>=32);lon+=(r&1)?~(r>>1):(r>>1);
+    out.push([lon/1e6,lat/1e6]);
+  }
+  return out;
+}
+async function fetchValhalla(a,b,noHighway){
+  const body={locations:[{lat:a.lat,lon:a.lon},{lat:b.lat,lon:b.lon}],costing:'auto',directions_options:{language:'fr-FR'}};
+  if(noHighway)body.costing_options={auto:{use_highways:0}};else body.alternates=2;
+  const r=await fetch('https://valhalla1.openstreetmap.de/route?json='+encodeURIComponent(JSON.stringify(body)));
+  const j=await r.json();
+  const trips=[j.trip,...(j.alternates||[]).map(x=>x.trip)].filter(Boolean);
+  return trips.map(t=>{
+    const coords=[],steps=[];
+    for(const lg of t.legs){
+      const pts=decode6(lg.shape);const off=coords.length?1:0;
+      for(let k=off;k<pts.length;k++)coords.push(pts[k]);
+      for(const m of lg.maneuvers||[]){
+        const ref=(m.street_names||[]).find(n=>/^[ANDM]\s?\d+/i.test(n))||'';
+        steps.push({ref,distance:(m.length||0)*1000});
+      }
+    }
+    return {distance:t.summary.length*1000,duration:t.summary.time,geometry:{coordinates:coords},legs:[{steps}]};
+  });
+}
+function similarRoute(r,o){
+  const A=r.geometry.coordinates,B=o.geometry.coordinates;
+  const sa=Math.max(1,Math.floor(A.length/40)),sb=Math.max(1,Math.floor(B.length/700));
+  const bs=[];for(let i=0;i<B.length;i+=sb)bs.push(B[i]);
+  let near=0,n=0;
+  for(let i=0;i<A.length;i+=sa){
+    n++;let best=1e12;
+    for(const q of bs){
+      const dx=(A[i][0]-q[0])*Math.cos(A[i][1]*Math.PI/180),dy=A[i][1]-q[1],d=dx*dx+dy*dy;
+      if(d<best)best=d;
+    }
+    if(Math.sqrt(best)*111320<2000)near++;
+  }
+  return near/n>=0.92;
+}
 async function getRoutes(a,b){
-  const [main,nomw]=await Promise.allSettled([fetchRoutes(a,b,'alternatives=3'),fetchRoutes(a,b,'exclude=motorway')]);
-  const R=main.status==='fulfilled'?[...main.value]:[];
-  if(nomw.status==='fulfilled')R.push(...nomw.value);
+  const res=await Promise.allSettled([
+    fetchRoutes(a,b,'alternatives=3'),fetchRoutes(a,b,'exclude=motorway'),
+    fetchValhalla(a,b,false),fetchValhalla(a,b,true)
+  ]);
+  const R=res.flatMap(x=>x.status==='fulfilled'?x.value:[]);
   if(!R.length)throw new Error('Itinéraire introuvable');
   const out=[];
-  for(const r of R.sort((x,y)=>x.duration-y.duration)){
-    if(out.some(o=>Math.abs(o.duration-r.duration)<o.duration*0.02&&Math.abs(o.distance-r.distance)<o.distance*0.02))continue;
-    out.push(r);
-  }
-  return out.slice(0,4);
+  for(const r of R){if(!out.some(o=>similarRoute(r,o)))out.push(r)}
+  return out.sort((x,y)=>x.duration-y.duration).slice(0,4);
 }
 function autoShare(rt){
   let a=0,t=0;
@@ -560,7 +604,7 @@ function buildMap(){
   const dark=matchMedia('(prefers-color-scheme: dark)').matches;
   state.dark=dark;
   MAP=L.map('mapBox',{zoomControl:false,scrollWheelZoom:false,attributionControl:true});
-  L.tileLayer(`https://{s}.basemaps.cartocdn.com/${dark?'dark_all':'light_all'}/{z}/{x}/{y}{r}.png`,{maxZoom:18,subdomains:'abcd',attribution:'© OpenStreetMap · © CARTO'}).addTo(MAP);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(MAP);
   const fr=[.5,.35,.65,.22];
   MLINES=[];MLABS=[];
   R.forEach((r,i)=>{
