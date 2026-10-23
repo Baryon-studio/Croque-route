@@ -9,7 +9,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -34,7 +34,7 @@
   --bg:#FFFFFF;--surface:#EDF1F6;--ink:#143421;--muted:#6F8077;--line:rgba(20,52,33,.10);
   --sign:#F3F6FA;--sign-line:rgba(20,52,33,.09);--glass:rgba(255,255,255,.86);
   --lime1:#E9FB86;--lime2:#C6EC45;--on-lime:#143421;--top:#E4EBF4;
-  --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  --serif:"Quicksand",-apple-system,system-ui,sans-serif;
   --lime:linear-gradient(135deg,var(--lime1),var(--lime2));
 }
 @media (prefers-color-scheme:dark){:root{
@@ -74,8 +74,9 @@ input{font:inherit;color:inherit}
 .logo{width:34px;height:34px;border-radius:10px;display:block;box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 2px 8px rgba(20,52,33,.12)}
 .brand span{font:500 20px/1 var(--serif);letter-spacing:-.2px}
 .wm{height:34px;width:auto;display:block}
-h1{font:400 46px/1.02 var(--serif);letter-spacing:-1.4px;margin:30px 0 12px}
+h1{font:600 42px/1.06 var(--serif);letter-spacing:-1.6px;margin:30px 0 12px}
 .sub{color:var(--muted);margin:0 0 24px;font-size:16px}
+.quote{display:inline-block;margin-top:8px;font-size:14px;font-style:italic;opacity:.85}
 .card{position:relative;background:var(--surface);border-radius:14px;padding:6px 6px 6px 16px}
 .route{display:flex;align-items:stretch;gap:12px}
 .rail-ic{display:flex;flex-direction:column;align-items:center;padding:21px 0}
@@ -101,9 +102,9 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
 .chip .lg{width:26px;height:26px;font-size:12px}
 .chip .lg svg{width:14px;height:14px}
 .chip:active{transform:scale(.96)}
-.step{display:flex;align-items:center;gap:10px;font:500 23px/1.2 var(--serif);letter-spacing:-.3px;margin:30px 0 12px}
-.step i{font:600 13px/1 "Inter",sans-serif;font-style:normal;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--lime);color:var(--on-lime);flex:none;position:relative;top:-3px}
-.step span{display:block;line-height:24px;padding-bottom:3px}
+.step{display:flex;align-items:center;gap:10px;font:600 22px/1.2 var(--serif);letter-spacing:-.3px;margin:30px 0 12px}
+.step i{font:600 13px/1 "Inter",sans-serif;font-style:normal;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--lime);color:var(--on-lime);flex:none;position:relative;top:0}
+.step span{display:block;line-height:24px;padding-bottom:1px}
 .hint{color:var(--muted);font-size:14.5px;margin:-4px 0 14px}
 .hint2{display:inline-block;margin-top:6px;font-style:italic}
 .chip .pk{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;margin-left:2px;background:rgba(20,52,33,.07);color:var(--muted);transition:background .3s,color .3s}
@@ -120,7 +121,7 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
 .ctabar .err{margin:0 2px 10px}
 .chip.on{color:var(--on-lime);border-color:transparent;box-shadow:0 4px 14px rgba(198,236,69,.35)}
 .chip.on .lg.mono{background:var(--on-lime);color:var(--lime1)}
-.cta{width:100%;height:58px;margin-top:16px;border-radius:999px;background:var(--lime);color:var(--on-lime);font:500 21px/1 var(--serif);letter-spacing:.1px;box-shadow:0 10px 26px rgba(198,236,69,.38);transition:transform .15s}
+.cta{width:100%;height:58px;margin-top:16px;border-radius:999px;background:var(--lime);color:var(--on-lime);font:600 18px/1 var(--serif);letter-spacing:0;box-shadow:0 10px 26px rgba(198,236,69,.38);transition:transform .15s}
 .cta:active{transform:scale(.985)}
 .err{color:#B42318;margin:14px 2px 0;font-size:14px}
 
@@ -158,7 +159,7 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
 .sign{flex:1;min-width:0;margin-bottom:12px;background:var(--sign);color:var(--ink);border-radius:16px;padding:16px 18px 4px}
 .sign-in{border:0;padding:0}
 .sign-h{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 10px}
-.sign-h b{font:500 28px/1 var(--serif);letter-spacing:-.6px}
+.sign-h b{font:600 26px/1 var(--serif);letter-spacing:-.6px}
 .sign-h span{font-size:13px;color:var(--muted)}
 .it{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:transparent;border-radius:0;padding:12px 0;margin:0;border-top:1px solid var(--sign-line);transition:opacity .15s}
 .it:active{opacity:.6}
@@ -246,7 +247,7 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
       <img class="wm" src="logo-escale.png" alt="Escale">
     </div>
     <h1>Où manger<br>sur ta route ?</h1>
-    <p class="sub">Tous les arrêts de ton trajet, enseigne par enseigne.</p>
+    <p class="sub">Fini les recherches interminables pour manger sur ta route.<br><span class="quote">« Mais c'était écrit 5 min de détour, je te jure ! »</span></p>
 
     <h3 class="step"><i>1</i><span>Ton trajet</span></h3>
     <div class="card route">
