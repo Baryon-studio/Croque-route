@@ -3,30 +3,32 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#E7EDF5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C1710" media="(prefers-color-scheme: dark)">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Croque-Route">
+<meta name="apple-mobile-web-app-title" content="Escale">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-192.png">
-<title>Croque-Route</title>
+<title>Escale</title>
 <style>
 :root{
-  --bg:#FFFFFF;--surface:#F3F3F3;--ink:#000000;--muted:#6B6B6B;--line:rgba(0,0,0,.09);
-  --sign:#F3F3F3;--sign-line:rgba(0,0,0,.09);--glass:rgba(255,255,255,.88);
-  --serif:"Inter",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --bg:#FFFFFF;--surface:#EDF1F6;--ink:#143421;--muted:#6F8077;--line:rgba(20,52,33,.10);
+  --sign:#F3F6FA;--sign-line:rgba(20,52,33,.09);--glass:rgba(255,255,255,.86);
+  --lime1:#E9FB86;--lime2:#C6EC45;--on-lime:#143421;--top:#E4EBF4;
+  --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  --lime:linear-gradient(135deg,var(--lime1),var(--lime2));
 }
 @media (prefers-color-scheme:dark){:root{
-  --bg:#000000;--surface:#1C1C1C;--ink:#FFFFFF;--muted:#9A9A9A;--line:rgba(255,255,255,.12);
-  --sign:#1C1C1C;--sign-line:rgba(255,255,255,.12);--glass:rgba(0,0,0,.88);
+  --bg:#0C1710;--surface:#16251B;--ink:#EAF3E4;--muted:#8FA395;--line:rgba(234,243,228,.12);
+  --sign:#142218;--sign-line:rgba(234,243,228,.10);--glass:rgba(12,23,16,.86);--top:#12261A;
 }}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;margin:0}
@@ -34,7 +36,7 @@ body{background:var(--bg);color:var(--ink);font:16px/1.4 "Inter",-apple-system,B
 button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer}
 input{font:inherit;color:inherit}
 #app{position:relative;height:100%;max-width:480px;margin:0 auto;overflow:hidden;background:var(--bg)}
-.view{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(env(safe-area-inset-top) + 16px) 22px calc(110px + env(safe-area-inset-bottom))}
+.view{background:linear-gradient(180deg,var(--top) 0,var(--bg) 380px);position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(env(safe-area-inset-top) + 16px) 22px calc(110px + env(safe-area-inset-bottom))}
 
 /* Logos : cercle monochrome */
 .lg{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--ink);color:var(--bg);font:700 14px/1 var(--serif);letter-spacing:0}
@@ -45,9 +47,9 @@ input{font:inherit;color:inherit}
 
 /* Accueil */
 .brand{display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:-.1px;font-size:15px}
-.logo{width:32px;height:32px;border-radius:9px;background:var(--ink);display:grid;place-items:center}
-.logo svg path{stroke:var(--bg)}
-h1{font:800 42px/1.04 var(--serif);letter-spacing:-1.8px;margin:30px 0 12px}
+.logo{width:34px;height:34px;border-radius:10px;display:block;box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 2px 8px rgba(20,52,33,.12)}
+.brand span{font:500 20px/1 var(--serif);letter-spacing:-.2px}
+h1{font:400 46px/1.02 var(--serif);letter-spacing:-1.4px;margin:30px 0 12px}
 .sub{color:var(--muted);margin:0 0 24px;font-size:16px}
 .card{position:relative;background:var(--surface);border-radius:14px;padding:6px 6px 6px 16px}
 .route{display:flex;align-items:stretch;gap:12px}
@@ -74,9 +76,9 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
 .chip .lg{width:26px;height:26px;font-size:12px}
 .chip .lg svg{width:14px;height:14px}
 .chip:active{transform:scale(.96)}
-.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.chip.on .lg.mono{background:var(--bg);color:var(--ink)}
-.cta{width:100%;height:56px;margin-top:16px;border-radius:10px;background:var(--ink);color:var(--bg);font-size:16px;font-weight:600;letter-spacing:.2px;transition:transform .15s}
+.chip.on{background:var(--lime);color:var(--on-lime);border-color:transparent;box-shadow:0 4px 14px rgba(198,236,69,.35)}
+.chip.on .lg.mono{background:var(--on-lime);color:var(--lime1)}
+.cta{width:100%;height:58px;margin-top:16px;border-radius:999px;background:var(--lime);color:var(--on-lime);font:500 21px/1 var(--serif);letter-spacing:.1px;box-shadow:0 10px 26px rgba(198,236,69,.38);transition:transform .15s}
 .cta:active{transform:scale(.985)}
 .err{color:#B42318;margin:14px 2px 0;font-size:14px}
 
@@ -94,11 +96,11 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
 .top .s{color:var(--muted);font-size:14px}
 .seg{display:flex;background:var(--surface);border-radius:999px;padding:4px}
 .seg button{flex:1;padding:9px 0;border-radius:999px;font-size:14px;font-weight:500;color:var(--muted);transition:background .2s,color .2s}
-.seg button.on{background:var(--ink);color:var(--bg)}
+.seg button.on{background:var(--lime);color:var(--on-lime)}
 .dists{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px}
 .dists button{white-space:nowrap}
 .dists button{padding:8px 13px;border-radius:999px;font-size:13px;font-weight:500;background:var(--surface);color:var(--ink);border:1px solid transparent}
-.dists button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.dists button.on{background:var(--lime);color:var(--on-lime);border-color:transparent}
 .count{color:var(--muted);font-size:13.5px;margin:16px 2px 12px}
 .tl{position:relative}
 .node{display:flex;gap:14px}
@@ -114,13 +116,13 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
 .sign{flex:1;min-width:0;margin-bottom:12px;background:var(--sign);color:var(--ink);border-radius:16px;padding:16px 18px 4px}
 .sign-in{border:0;padding:0}
 .sign-h{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 10px}
-.sign-h b{font:700 24px/1 var(--serif);letter-spacing:-.8px}
+.sign-h b{font:500 28px/1 var(--serif);letter-spacing:-.6px}
 .sign-h span{font-size:13px;color:var(--muted)}
 .it{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:transparent;border-radius:0;padding:12px 0;margin:0;border-top:1px solid var(--sign-line);transition:opacity .15s}
 .it:active{opacity:.6}
 .it .nm{flex:1;min-width:0;font-weight:500;font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .it .ds{font-size:13px;color:var(--muted);white-space:nowrap}
-.it .axe{background:var(--ink);color:var(--bg);font-size:10px;font-weight:700;letter-spacing:.9px;padding:4px 9px;border-radius:999px}
+.it .axe{background:var(--lime);color:var(--on-lime);font-size:10px;font-weight:700;letter-spacing:.9px;padding:4px 9px;border-radius:999px}
 .empty{background:var(--surface);border-radius:14px;padding:22px;text-align:center;color:var(--muted)}
 .load{text-align:center;padding:60px 20px;color:var(--muted)}
 .bar{height:3px;border-radius:2px;background:var(--line);overflow:hidden;margin:18px auto 0;max-width:220px}
@@ -198,8 +200,8 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
   <!-- ACCUEIL -->
   <section class="view" id="home">
     <div class="brand">
-      <div class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 3 4 21M15 3l5 18" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><path d="M12 6v3M12 12v3M12 18v3" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg></div>
-      <span>Croque-Route</span>
+      <img class="logo" src="icon-192.png" alt="">
+      <span>Escale</span>
     </div>
     <h1>Où manger<br>sur ta route ?</h1>
     <p class="sub">Tous les arrêts de ton trajet, enseigne par enseigne.</p>

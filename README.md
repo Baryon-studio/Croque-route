@@ -1,4 +1,4 @@
-# Croque-Route : mémo de mise en ligne
+# Escale : mémo de mise en ligne
 
 Objectif : l'app en ligne sur GitHub Pages (gratuit), avec la base de restaurants construite automatiquement par GitHub.
 
