@@ -94,6 +94,7 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
 .step{display:flex;align-items:center;gap:10px;font:500 23px/1.2 var(--serif);letter-spacing:-.3px;margin:30px 0 12px}
 .step i{font:600 13px/1 "Inter",sans-serif;font-style:normal;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--lime);color:var(--on-lime)}
 .hint{color:var(--muted);font-size:14.5px;margin:-4px 0 14px}
+.hint2{display:inline-block;margin-top:6px;font-style:italic}
 .chip .pk{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;margin-left:2px;background:rgba(20,52,33,.07);color:var(--muted);transition:background .3s,color .3s}
 .chip .pk svg{width:11px;height:11px;display:block}
 .chip{background:var(--lime) left center/0% 100% no-repeat var(--surface)!important;transition:background-size .38s cubic-bezier(.3,.7,.2,1),transform .15s,box-shadow .3s!important}
@@ -248,13 +249,13 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
       <button class="loc" id="locBtn" type="button" aria-label="Utiliser ma position"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="3.5"/><circle cx="12" cy="12" r="8"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3"/></svg></button>
       <button class="swap" id="swap" aria-label="Inverser"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 4 3 8M7 4l4 4M17 20V4M17 20l-4-4M17 20l4-4"/></svg></button>
     </div>
-    <h3 class="step"><i>2</i>Tu veux manger quoi ?</h3>
-    <p class="hint">Touche une ou plusieurs enseignes. Sans choix, on te montre tous les restos.</p>
+    <h3 class="step"><i>2</i>On mange où ?</h3>
+    <p class="hint">Touche une ou plusieurs enseignes où tu aimerais manger.<br><span class="hint2">Pas d'idée précise ? Ne coche rien et laisse la magie opérer.</span></p>
     <div class="chips" id="chips"></div>
     <p class="sub" id="dbInfo" style="font-size:12px;margin-top:14px"></p>
     <div class="ctabar">
       <div class="err" id="homeErr"></div>
-      <button class="cta" id="go">Voir tous les restos</button>
+      <button class="cta" id="go">Tout voir sur ma route</button>
     </div>
   </section>
 
@@ -347,7 +348,7 @@ const IPL='<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-wid
 const ICK='<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.3 4.8 9 10 3.2"/></svg>';
 function updCta(){
   const n=state.selected.size;
-  $('go').textContent=n?`Voir mes arrêts · ${n} enseigne${n>1?'s':''}`:'Voir tous les restos';
+  $('go').textContent=n?`Voir mes arrêts · ${n} enseigne${n>1?'s':''}`:'Tout voir sur ma route';
   document.querySelectorAll('.chip').forEach(c=>{const p=c.querySelector('.pk');if(p)p.innerHTML=c.classList.contains('on')?ICK:IPL});
 }
 BRANDS.forEach(b=>{
