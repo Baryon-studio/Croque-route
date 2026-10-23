@@ -30,6 +30,17 @@
   --bg:#0C1710;--surface:#16251B;--ink:#EAF3E4;--muted:#8FA395;--line:rgba(234,243,228,.12);
   --sign:#142218;--sign-line:rgba(234,243,228,.10);--glass:rgba(12,23,16,.86);--top:#12261A;
 }}
+
+/* Écran de démarrage */
+#splash{position:fixed;inset:0;z-index:999;display:grid;place-items:center;background:linear-gradient(180deg,var(--top),var(--bg));transition:opacity .45s ease,transform .45s ease}
+#splash.out{opacity:0;transform:scale(1.04);pointer-events:none}
+.sp-car{position:relative;width:150px;animation:idle .11s linear infinite}
+.sp-car img{display:block;width:100%;height:auto}
+.sp-car .ghost{opacity:.12;filter:grayscale(1)}
+.sp-car .fill{position:absolute;left:0;top:0;clip-path:inset(100% 0 0 0);animation:fillUp 2.8s cubic-bezier(.45,0,.25,1) .15s forwards}
+@keyframes fillUp{to{clip-path:inset(0 0 0 0)}}
+@keyframes idle{0%{transform:translate(0,0) rotate(0)}25%{transform:translate(.7px,-.9px) rotate(.35deg)}50%{transform:translate(-.6px,.5px) rotate(-.3deg)}75%{transform:translate(.5px,.8px) rotate(.2deg)}100%{transform:translate(0,0) rotate(0)}}
+@media (prefers-reduced-motion:reduce){.sp-car{animation:none}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--ink);font:16px/1.4 "Inter",-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
@@ -196,6 +207,7 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
 </style>
 </head>
 <body>
+<div id="splash" aria-hidden="true"><div class="sp-car"><img class="ghost" src="a-car.png" alt=""><img class="fill" src="a-car.png" alt=""></div></div>
 <div id="app">
 
   <!-- ACCUEIL -->
@@ -791,7 +803,16 @@ async function search(){
     $('retry').onclick=search;
   }
 }
-loadPois();
+const poisReady=loadPois();
+/* Écran de démarrage : ~3 s minimum, le temps de précharger la base */
+(function(){
+  const sp=document.getElementById('splash');if(!sp)return;
+  const minWait=new Promise(r=>setTimeout(r,3000));
+  const maxWait=new Promise(r=>setTimeout(r,8000));
+  Promise.race([Promise.all([minWait,Promise.resolve(poisReady).catch(()=>{})]),maxWait]).then(()=>{
+    sp.classList.add('out');setTimeout(()=>sp.remove(),500);
+  });
+})();
 $('go').onclick=run;
 $('back').onclick=()=>{
   if(state.step==='list'&&state.routes&&state.routes.length){showChoice();return}
