@@ -1,4 +1,4 @@
-const CACHE = 'escale-v22';
+const CACHE = 'escale-v23';
 const SHELL = ['a-car.png','logo-escale.png','./', 'index.html', 'manifest.webmanifest', 'escale-192.png', 'escale-512.png', 'favicon.png'];
 
 self.addEventListener('install', e => {
