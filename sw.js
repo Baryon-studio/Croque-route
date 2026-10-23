@@ -1,5 +1,5 @@
-const CACHE = 'escale-v18';
-const SHELL = ['a-car.png','logo-escale.png','./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
+const CACHE = 'escale-v19';
+const SHELL = ['a-car.png','logo-escale.png','./', 'index.html', 'manifest.webmanifest', 'escale-192.png', 'escale-512.png', 'favicon.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
