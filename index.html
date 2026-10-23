@@ -102,7 +102,8 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
 .chip .lg svg{width:14px;height:14px}
 .chip:active{transform:scale(.96)}
 .step{display:flex;align-items:center;gap:10px;font:500 23px/1.2 var(--serif);letter-spacing:-.3px;margin:30px 0 12px}
-.step i{font:600 13px/1 "Inter",sans-serif;font-style:normal;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--lime);color:var(--on-lime)}
+.step i{font:600 13px/1 "Inter",sans-serif;font-style:normal;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--lime);color:var(--on-lime);flex:none;position:relative;top:-3px}
+.step span{display:block;line-height:24px;padding-bottom:3px}
 .hint{color:var(--muted);font-size:14.5px;margin:-4px 0 14px}
 .hint2{display:inline-block;margin-top:6px;font-style:italic}
 .chip .pk{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;margin-left:2px;background:rgba(20,52,33,.07);color:var(--muted);transition:background .3s,color .3s}
@@ -247,7 +248,7 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
     <h1>Où manger<br>sur ta route ?</h1>
     <p class="sub">Tous les arrêts de ton trajet, enseigne par enseigne.</p>
 
-    <h3 class="step"><i>1</i>Ton trajet</h3>
+    <h3 class="step"><i>1</i><span>Ton trajet</span></h3>
     <div class="card route">
       <div class="rail-ic"><i></i><u></u><b></b></div>
       <div class="fields">
@@ -259,7 +260,7 @@ h2{font-size:11.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--mu
       <button class="loc" id="locBtn" type="button" aria-label="Utiliser ma position"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="3.5"/><circle cx="12" cy="12" r="8"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3"/></svg></button>
       <button class="swap" id="swap" aria-label="Inverser"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 4 3 8M7 4l4 4M17 20V4M17 20l-4-4M17 20l4-4"/></svg></button>
     </div>
-    <h3 class="step"><i>2</i>On mange où ?</h3>
+    <h3 class="step"><i>2</i><span>On mange où ?</span></h3>
     <p class="hint">Touche une ou plusieurs enseignes où tu aimerais manger.<br><span class="hint2">Pas d'idée précise ? Ne coche rien et laisse la magie opérer.</span></p>
     <div class="chips" id="chips"></div>
     <p class="sub" id="dbInfo" style="font-size:12px;margin-top:14px"></p>
